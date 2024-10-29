@@ -1,12 +1,9 @@
 # controltab
 
-- [ ] get guitar pro files from music-xml
-- [ ] get music-xml files from guitar pro
-
 OR
 
-- [ ] fix loading music-xml into alphatab
-- [ ] get music-xml files from guitar pro (or keep master version always as xml?)
+- [X] get text represenation of tabs -> unzip gp (guitarpro7) -> Content/score.gpif
+- [ ] 
 
 THEN
 

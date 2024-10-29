@@ -11,10 +11,7 @@
     }
     let target = document.querySelector("#leftTab");
     api = new window.alphaTab.AlphaTabApi(target, {
-      //file: "test.gp",
-      //file: "guitar_pro_export_test.xml",
-      // file: "4-foreheadRemoval_gp5.musicxml",
-      file: "Untitled.musicxml",
+      file: "4-foreheadRemoval.gp",
     });
   });
 </script>
