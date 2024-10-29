@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd tuxbuild
+
 # Install prerequisites
 sudo apt install -y wget unzip git build-essential default-jdk maven libwebkit2gtk-4.1-0 libfluidsynth-dev libjack-jackd2-dev libasound2-dev liblilv-dev libsuil-dev qtbase5-dev fonts-wqy-zenhei
 

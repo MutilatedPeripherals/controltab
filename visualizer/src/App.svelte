@@ -4,21 +4,6 @@
   let leftTab, rightTab;
   let api: any = undefined;
 
-  /*onMount(() => {
-    const leftOptions = { file: "path/to/main-version.xml", cursor: true };
-    const rightOptions = { file: "path/to/modified-version.xml", cursor: true };
-    console.log(alphaTab);
-
-    leftTab = new alphaTab.AlphaTabApi(
-      document.querySelector("#leftTab"),
-      leftOptions
-    );
-    rightTab = new alphaTab.AlphaTabApi(
-      document.querySelector("#rightTab"),
-      rightOptions
-    );
-  });*/
-
   onMount(async () => {
     if (!window.alphaTab) {
       console.error("AlphaTab not loaded");
@@ -26,8 +11,10 @@
     }
     let target = document.querySelector("#leftTab");
     api = new window.alphaTab.AlphaTabApi(target, {
-      file: "test.gp",
+      //file: "test.gp",
       //file: "guitar_pro_export_test.xml",
+      // file: "4-foreheadRemoval_gp5.musicxml",
+      file: "Untitled.musicxml",
     });
   });
 </script>
