@@ -19,6 +19,20 @@ def beats_from_notes(note_ids: List[str]) -> Dict[str, Element]:
     return results
 
 
-result = beats_from_notes(["2", "3"])
+def voices_from_beats(beats: Dict[str, Element]) -> Dict[str, Element]:
+    results = {}
+
+    voices = tree.xpath('//Voice')
+    for voice in voices:
+        voice_beat_ids = voice.find('Beats').text.split()
+        beat_ids = beats.keys()
+        for beat_id in beat_ids:
+            if beat_id in voice_beat_ids:
+                results[voice.attrib["id"]] = voice
+
+    return results
+
+beats = beats_from_notes(["3"]) # 2 beats
+voices = voices_from_beats(beats)
 
 print("Hello")
