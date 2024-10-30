@@ -134,7 +134,6 @@ def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]
     return changed_indexes
 
 
-# Usage example:
 def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
     old_tree = etree.parse(old_xml)
     new_tree = etree.parse(new_xml)
@@ -146,10 +145,7 @@ def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
 
 
 if __name__ == "__main__":
-    # tree = etree.parse('./simple/Empty/Content/score.gpif')
-    # materialized_score = decompress_gpif(tree)
+    x = compare_gpif_files('./simple/Empty/Content/score.gpif', './simple/Empty2/Content/score.gpif')
+    #x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
 
-    #x = compare_gpif_files('./simple/Empty/Content/score.gpif', './simple/Empty2/Content/score.gpif')
-    x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
-
-    print("Hello")
+    print(f"Indexes of MasterBars with changes: {x}")
