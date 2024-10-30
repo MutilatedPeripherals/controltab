@@ -12,7 +12,6 @@ class Note:
     string: int
     midi: int
 
-
 @dataclass
 class Beat:
     notes: List[Note]
@@ -34,7 +33,7 @@ class MasterBar:
     bars: List[Bar]
 
 
-def decompress_gpif(tree):
+def decompress_gpif(tree, filepath):
     master_bars = []
 
     # Build lookup tables
@@ -65,7 +64,13 @@ def decompress_gpif(tree):
                 # Materialize each beat in the voice
                 for beat_id in beat_ids:
                     beat = beats_lookup[beat_id]
-                    note_ids = beat.find('Notes').text.split()
+                    note_ids = beat.find('Notes')
+                    if note_ids is not None:
+                         note_ids = note_ids.text.split()
+                    else:
+                        print(f"beat {beat_id} in file {filepath} has no notes!!!")
+                        print(beat)
+                        continue
 
                     # Materialize notes in the beat
                     materialized_notes = []
@@ -73,12 +78,12 @@ def decompress_gpif(tree):
                         note = notes_lookup[note_id]
                         props = note.findall('.//Property')
                         materialized_note = Note(
-                            step=props[0].find('.//Step').text,
-                            accidental=props[0].find('.//Accidental').text or '',
-                            octave=int(props[0].find('.//Octave').text),
-                            fret=int(props[1].find('.//Fret').text),
-                            string=int(props[3].find('.//String').text),
-                            midi=int(props[2].find('.//Number').text)
+                            step=next(prop.find('.//Step').text for prop in props if prop.get('name') == 'ConcertPitch'),
+                            accidental=next(prop.find('.//Accidental').text or '' for prop in props if prop.get('name') == 'ConcertPitch'),
+                            octave=int(next(prop.find('.//Octave').text for prop in props if prop.get('name') == 'ConcertPitch')),
+                            fret=int(next(prop.find('.//Fret').text for prop in props if prop.get('name') == 'Fret')),
+                            string=int(next(prop.find('.//String').text for prop in props if prop.get('name') == 'String')),
+                            midi=int(next(prop.find('.//Number').text for prop in props if prop.get('name') == 'Midi'))
                         )
                         materialized_notes.append(materialized_note)
 
@@ -134,8 +139,8 @@ def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
     old_tree = etree.parse(old_xml)
     new_tree = etree.parse(new_xml)
 
-    old_gpif = decompress_gpif(old_tree)
-    new_gpif = decompress_gpif(new_tree)
+    old_gpif = decompress_gpif(old_tree, old_xml)
+    new_gpif = decompress_gpif(new_tree, new_xml)
 
     return find_changed_masterbars(old_gpif, new_gpif)
 
@@ -144,6 +149,7 @@ if __name__ == "__main__":
     # tree = etree.parse('./simple/Empty/Content/score.gpif')
     # materialized_score = decompress_gpif(tree)
 
-    x = compare_gpif_files('./simple/Empty/Content/score.gpif', './simple/Empty2/Content/score.gpif')
+    #x = compare_gpif_files('./simple/Empty/Content/score.gpif', './simple/Empty2/Content/score.gpif')
+    x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
 
     print("Hello")
