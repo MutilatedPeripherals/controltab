@@ -14,6 +14,8 @@ OR
 * find the voice by the beat
 * find the bar by the voice
 
+- edge case - if a note is reused, it resolves to all the voices where the note is used. Then how do we know which bar actually changed
+
 THEN
 
 - [ ] diff 2 xml files
