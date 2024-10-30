@@ -3,6 +3,7 @@
 OR
 
 - [X] get text represenation of tabs -> unzip gp (guitarpro7) -> Content/score.gpif
+- [X] repackage to .gp file after changing the .gpif file. in the folder which contains the `VERSION` and `Content` we run `zip -r new.gp ./*`
 - [ ] 
 
 THEN
