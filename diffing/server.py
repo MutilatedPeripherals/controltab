@@ -23,5 +23,5 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
+    x = compare_gpif_files('./simple/Empty/Content/score.gpif', './simple/Empty2/Content/score.gpif')
     return x

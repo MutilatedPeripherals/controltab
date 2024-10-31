@@ -49,7 +49,7 @@
 
       // Rendering each bar
       api = new window.alphaTab.AlphaTabApi(newTabContainer, {
-        file: "old.gp",
+        file: "Empty.gp",
         displayBarRange: true,
         startBar: bar,
         barCount: 1,
@@ -66,7 +66,7 @@
       });
 
       new window.alphaTab.AlphaTabApi(newTabContainerNew, {
-        file: "new.gp",
+        file: "Empty2.gp",
         displayBarRange: true,
         startBar: bar,
         barCount: 1,
