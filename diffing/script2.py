@@ -1,3 +1,5 @@
+import json
+
 from lxml import etree
 from dataclasses import dataclass, asdict
 from typing import List, Set
@@ -108,6 +110,7 @@ def decompress_gpif(tree, filepath):
         )
         master_bars.append(master_bar_obj)
 
+    print(f"Amount of master bars: {len(master_bars)}")
     return master_bars
 
 
@@ -129,6 +132,13 @@ def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]
         # Convert to dict for easier comparison
         # This handles nested dataclasses automatically
         if asdict(old_master) != asdict(new_master):
+
+            print("old master")
+            print(json.dumps(asdict(old_master)))
+
+            print("new master")
+            print(json.dumps(asdict(new_master)))
+
             changed_indexes.add(i)
 
     return changed_indexes
@@ -145,7 +155,7 @@ def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
 
 
 if __name__ == "__main__":
-    x = compare_gpif_files('./simple/Empty/Content/score.gpif', './simple/Empty2/Content/score.gpif')
-    #x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
+    # x = compare_gpif_files('./simple/Empty/Content/score.gpif', './simple/Empty2/Content/score.gpif')
+    x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
 
     print(f"Indexes of MasterBars with changes: {x}")
