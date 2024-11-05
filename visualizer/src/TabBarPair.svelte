@@ -136,7 +136,7 @@
           }
         }
       }
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500));
       paintBeats();
     });
   }
@@ -175,13 +175,13 @@
   });
 </script>
 
-<div class="flex">
+<div class="flex flex-row items-center justify-center gap-2">
   <div 
     bind:this={leftContainer}
-    class="w-[800px] h-[450px] bg-gray-100 border border-gray-300 rounded-lg shadow-md overflow-hidden mb-4"
+    class="w-[600px] h-[320px] bg-gray-100 border border-gray-300 rounded-lg shadow-md overflow-hidden"
   ></div>
   <div 
     bind:this={rightContainer}
-    class="w-[800px] h-[450px] bg-gray-100 border border-gray-300 rounded-lg shadow-md overflow-hidden mb-4"
+    class="w-[600px] h-[320px] bg-gray-100 border border-gray-300 rounded-lg shadow-md overflow-hidden"
   ></div>
 </div> 
