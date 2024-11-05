@@ -26,8 +26,6 @@
   });
 
   $: {
-    console.log("Current Page:", currentPage);
-    console.log("API Data Length:", apiData.length);
     paginatedData = apiData.slice(
       currentPage * itemsPerPage,
       (currentPage + 1) * itemsPerPage
@@ -56,7 +54,7 @@
     {/each}
   </div>
 
-  <div class="flex justify-center gap-4 py-2 mt-4">
+  <div class="flex justify-center gap-4 py-2 mt-2">
     <button 
       class="px-4 py-1 bg-blue-500 text-white rounded disabled:bg-gray-300" 
       on:click={previousPage} 

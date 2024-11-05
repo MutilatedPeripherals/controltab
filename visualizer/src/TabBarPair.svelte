@@ -28,8 +28,7 @@
       return;
     }
 
-    leftTabRenderer = new window.alphaTab.AlphaTabApi(leftContainer, {
-      file: "old.gp",
+    const commonSettings = {
       displayBarRange: true,
       startBar: masterBar + 1,
       barCount: 1,
@@ -47,33 +46,19 @@
           ScoreArtist: false,
           GuitarTuning: false,
           TrackNames: false,
-          EffectMarker: false,
+          EffectMarker: false
         },
       },
+    };
+
+    leftTabRenderer = new window.alphaTab.AlphaTabApi(leftContainer, {
+      ...commonSettings,
+      file: "old.gp",
     });
 
     rightTabRenderer = new window.alphaTab.AlphaTabApi(rightContainer, {
+      ...commonSettings,
       file: "new.gp",
-      displayBarRange: true,
-      startBar: masterBar + 1,
-      barCount: 1,
-      core: {
-        engine: "svg"
-      },
-      rendering: {
-        useWorkers: false,
-        virtualization: "off"
-      },
-      notation: {
-        elements: {
-          ScoreTitle: false,
-          ScoreSubTitle: false,
-          ScoreArtist: false,
-          GuitarTuning: false,
-          TrackNames: false,
-          EffectMarker: false,
-        },
-      },
     });
 
     let hasProcessedBeats = false;
@@ -86,34 +71,6 @@
       const track = score.tracks[0];
       const stave = track.staves[0];
       const bar = stave.bars[masterBar];
-
-      console.log('Left Bar:', {
-        barIndex: bar.index,
-        voices: bar.voices.map(voice => ({
-          voiceIndex: voice.index,
-          beats: voice.beats.map(beat => ({
-            id: beat.id,
-            notes: beat.notes.map(note => ({
-              string: note.string,
-              fret: note.fret
-            }))
-          }))
-        }))
-      });
-
-      console.log('Right Bar:', {
-        barIndex: masterBar,
-        voices: rightTabRenderer.score.tracks[0].staves[0].bars[masterBar].voices.map(voice => ({
-          voiceIndex: voice.index,
-          beats: voice.beats.map(beat => ({
-            id: beat.id,
-            notes: beat.notes.map(note => ({
-              string: note.string,
-              fret: note.fret
-            }))
-          }))
-        }))
-      });
 
       for (let voiceIndex = 0; voiceIndex < bar.voices.length; voiceIndex++) {
         const voice = bar.voices[voiceIndex];
@@ -142,8 +99,6 @@
   }
 
   function paintBeats() {
-    console.log("Painting beats: ", redBeats, greenBeats);
-    
     for (const beatId of redBeats) {
         const elements = document.querySelectorAll(`.b${beatId}`);
         if (elements.length === 0) {
