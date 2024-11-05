@@ -26,3 +26,4 @@ def read_root():
     x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
     listX = list(x)
     return [listX[0]]
+    # return x
