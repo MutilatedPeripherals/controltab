@@ -1,5 +1,3 @@
-from typing import Union
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -24,5 +22,4 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
-    listX = list(x)
-    return [listX[0]]
+    return x

@@ -70,8 +70,7 @@ def decompress_gpif(tree, filepath):
                     if note_ids is not None:
                          note_ids = note_ids.text.split()
                     else:
-                        print(f"beat {beat_id} in file {filepath} has no notes!!!")
-                        print(beat)
+                        print(f"beat {beat_id} from voice {voice_id} from bar {bar_id} in file {filepath} has no notes!!!")
                         continue
 
                     # Materialize notes in the beat
@@ -136,13 +135,6 @@ def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]
         # Convert to dict for easier comparison
         # This handles nested dataclasses automatically
         if asdict(old_master) != asdict(new_master):
-
-            print("old master")
-            print(json.dumps(asdict(old_master)))
-
-            print("new master")
-            print(json.dumps(asdict(new_master)))
-
             changed_indexes.add(i)
 
     return changed_indexes
