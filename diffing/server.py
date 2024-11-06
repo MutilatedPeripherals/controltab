@@ -2,9 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, HTTPException
 import httpx
-
-from diffing.models import KnackResponse
+import aiofiles
+import aiofiles.os
+import tempfile
+import zipfile
 from diffing.script2 import compare_gpif_files
+from starlette.responses import JSONResponse
 
 app = FastAPI()
 
@@ -38,10 +41,43 @@ def read_root():
     return x
 
 
-@app.get("/knack-records", response_model=KnackResponse)
+@app.get("/knack-records", response_model=None)
 async def get_knack_records():
     async with httpx.AsyncClient() as client:
         response = await client.get(KNACK_API_URL, headers=headers)
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="Error retrieving records from Knack")
-        return response.json()
+
+        response_data = response.json()
+        record = response_data["records"][2]
+
+        files_to_download = [
+            ("old", record["field_18_raw"]["url"]),
+            ("new", record["field_19_raw"]["url"])
+        ]
+
+        download_paths = {}
+
+        for field, url in files_to_download:
+            async with client.stream("GET", url) as file_response:
+                if file_response.status_code != 200:
+                    raise HTTPException(status_code=file_response.status_code,
+                                        detail=f"Error downloading file from {field}")
+
+                tmp_dir = tempfile.mkdtemp()
+                tmp_file_path = f"{tmp_dir}/{field}.gp"
+
+                async with aiofiles.open(tmp_file_path, 'wb') as tmp_file:
+                    async for chunk in file_response.aiter_bytes():
+                        await tmp_file.write(chunk)
+
+                with zipfile.ZipFile(tmp_file_path, 'r') as zip_ref:
+                    zip_ref.extractall(tmp_dir)
+
+                download_paths[field] = tmp_dir
+
+        return {
+            "download_paths": files_to_download,
+            "masterbar_diffs":compare_gpif_files(f"{download_paths["old"]}/Content/score.gpif",
+                                           f"{download_paths["new"]}/Content/score.gpif")
+        }

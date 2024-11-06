@@ -30,6 +30,7 @@
 
     const commonSettings = {
       displayBarRange: true,
+      tracks: [0, 1],
       startBar: masterBar + 1,
       barCount: 1,
       core: {
@@ -53,12 +54,12 @@
 
     leftTabRenderer = new window.alphaTab.AlphaTabApi(leftContainer, {
       ...commonSettings,
-      file: "old.gp",
+      file: "old.gp"
     });
 
     rightTabRenderer = new window.alphaTab.AlphaTabApi(rightContainer, {
       ...commonSettings,
-      file: "new.gp",
+      file: "new.gp"
     });
 
     let hasProcessedBeats = false;
@@ -133,10 +134,10 @@
 <div class="flex flex-row items-center justify-center gap-2">
   <div 
     bind:this={leftContainer}
-    class="w-[600px] h-[320px] bg-gray-100 border border-gray-300 rounded-lg shadow-md overflow-hidden"
+    class="w-[600px] h-[420px] bg-gray-100 border border-gray-300 rounded-lg shadow-md overflow-hidden"
   ></div>
   <div 
     bind:this={rightContainer}
-    class="w-[600px] h-[320px] bg-gray-100 border border-gray-300 rounded-lg shadow-md overflow-hidden"
+    class="w-[600px] h-[420px] bg-gray-100 border border-gray-300 rounded-lg shadow-md overflow-hidden"
   ></div>
 </div> 

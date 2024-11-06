@@ -8,6 +8,22 @@
   const itemsPerPage = 2;
 
   async function callApi() {
+    // TODO: replace with new endpoint that returns :\
+    /*
+      {
+            "download_paths":  [
+              [
+                "old",
+                "someurl.com"
+              ],
+              [
+                "new",
+                "someurl.com"
+              ]
+            ],
+            "masterbar_diffs": [1,3,4,56,7]
+        }
+     */
     try {
       const response = await fetch("http://127.0.0.1:8000/");
       if (!response.ok) {
