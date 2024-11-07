@@ -42,6 +42,33 @@ If you have state that's important to retain within a component, consider creati
 ```ts
 // store.ts
 // An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+import { writable } from "svelte/store";
+export default writable(0);
 ```
+
+# Installing Prettier in Visual Studio Code
+
+1. Open **Visual Studio Code**.
+
+2. Navigate to the **Extensions** view:
+
+   - Click the **Extensions** icon in the sidebar.
+   - Or press `Ctrl+Shift+X` (Windows/Linux) or `Cmd+Shift+X` (Mac).
+
+3. In the search bar, type **Prettier - Code formatter**.
+
+4. Find **Prettier - Code formatter** by **Prettier** in the list of results.
+
+5. Click the **Install** button.
+
+# Setting Prettier as the Default Formatter
+
+1. Open **Settings** by going to `File > Preferences > Settings` (or press `Ctrl+,`).
+
+2. Search for **default formatter** in the Settings search bar.
+
+3. Under **Editor: Default Formatter**, select **Prettier - Code formatter** from the dropdown list.
+
+4. Enable **format-on-save**:
+   - In the Settings search bar, type **format on save**.
+   - Check the box next to **Editor: Format On Save**.
