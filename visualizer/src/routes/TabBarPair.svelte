@@ -2,23 +2,26 @@
   import { onMount, tick } from "svelte";
 
   export let masterBar: number;
-  
+
   let leftTabRenderer: any = undefined;
   let rightTabRenderer: any = undefined;
   let redBeats: number[] = [];
   let greenBeats: number[] = [];
 
   const areBeatsDifferent = (beat1: any, beat2: any) => {
-    return JSON.stringify(
-      beat1.notes.map((note) => ({
-        string: note.string,
-        fret: note.fret,
-      }))
-    ) !== JSON.stringify(
-      beat2.notes.map((note) => ({ 
-        string: note.string, 
-        fret: note.fret 
-      }))
+    return (
+      JSON.stringify(
+        beat1.notes.map((note) => ({
+          string: note.string,
+          fret: note.fret,
+        }))
+      ) !==
+      JSON.stringify(
+        beat2.notes.map((note) => ({
+          string: note.string,
+          fret: note.fret,
+        }))
+      )
     );
   };
 
@@ -34,11 +37,11 @@
       startBar: masterBar + 1,
       barCount: 1,
       core: {
-        engine: "svg"
+        engine: "svg",
       },
       rendering: {
         useWorkers: false,
-        virtualization: "off"
+        virtualization: "off",
       },
       notation: {
         elements: {
@@ -47,19 +50,19 @@
           ScoreArtist: false,
           GuitarTuning: false,
           TrackNames: false,
-          EffectMarker: false
+          EffectMarker: false,
         },
       },
     };
 
     leftTabRenderer = new window.alphaTab.AlphaTabApi(leftContainer, {
       ...commonSettings,
-      file: "old.gp"
+      file: "old.gp",
     });
 
     rightTabRenderer = new window.alphaTab.AlphaTabApi(rightContainer, {
       ...commonSettings,
-      file: "new.gp"
+      file: "new.gp",
     });
 
     let hasProcessedBeats = false;
@@ -94,32 +97,32 @@
           }
         }
       }
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
       paintBeats();
     });
   }
 
   function paintBeats() {
     for (const beatId of redBeats) {
-        const elements = document.querySelectorAll(`.b${beatId}`);
-        if (elements.length === 0) {
-            console.warn(`No elements found for red beat ID: ${beatId}`);
-            continue;
-        }
-        elements.forEach((element) => {
-            element.setAttribute("style", "fill: red");
-        });
+      const elements = document.querySelectorAll(`.b${beatId}`);
+      if (elements.length === 0) {
+        console.warn(`No elements found for red beat ID: ${beatId}`);
+        continue;
+      }
+      elements.forEach((element) => {
+        element.setAttribute("style", "fill: red");
+      });
     }
 
     for (const beatId of greenBeats) {
-        const elements = document.querySelectorAll(`.b${beatId}`);
-        if (elements.length === 0) {
-            console.warn(`No elements found for green beat ID: ${beatId}`);
-            continue;
-        }
-        elements.forEach((element) => {
-            element.setAttribute("style", "fill: #09ad09");
-        });
+      const elements = document.querySelectorAll(`.b${beatId}`);
+      if (elements.length === 0) {
+        console.warn(`No elements found for green beat ID: ${beatId}`);
+        continue;
+      }
+      elements.forEach((element) => {
+        element.setAttribute("style", "fill: #09ad09");
+      });
     }
   }
 
@@ -132,12 +135,12 @@
 </script>
 
 <div class="flex flex-row items-center justify-center gap-2">
-  <div 
+  <div
     bind:this={leftContainer}
     class="w-[600px] h-[420px] bg-gray-100 border border-gray-300 rounded-lg shadow-md overflow-hidden"
   ></div>
-  <div 
+  <div
     bind:this={rightContainer}
     class="w-[600px] h-[420px] bg-gray-100 border border-gray-300 rounded-lg shadow-md overflow-hidden"
   ></div>
-</div> 
+</div>
