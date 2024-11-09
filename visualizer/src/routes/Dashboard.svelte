@@ -27,7 +27,7 @@
 
   function suggestChange(id) {
     console.log("Suggesting a change for tab with id:", id);
-    // Logic for suggesting a change (e.g., open a modal or redirect)
+    push(`/tabs/${id}/compare`);
   }
 </script>
 

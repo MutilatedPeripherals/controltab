@@ -1,11 +1,13 @@
 <script>
   import { onMount } from "svelte";
+  import { push } from "svelte-spa-router"; // Import push for redirection
   export let params;
   let selectedFile = null;
   let isDragging = false;
   let errorMessage = "";
   let tabId = params.id;
   let fileInput; // Reference the file input
+  import { modifiedBars } from "../stores/modifiedBars";
 
   function handleFileChange(event) {
     const file = event.target.files[0];
@@ -37,8 +39,14 @@
         body: formData,
       });
       if (!response.ok) throw new Error("File upload failed");
+      const data = await response.json();
+      modifiedBars.set(data.comparison_result);
+
       alert("File uploaded successfully!");
       selectedFile = null;
+
+      // Redirect to the visualizer
+      push("/visualizer");
     } catch (error) {
       console.error("Error uploading file:", error);
       errorMessage = "File upload failed. Please try again.";

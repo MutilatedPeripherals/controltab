@@ -1,44 +1,16 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import TabBarPair from "./TabBarPair.svelte";
+  import { modifiedBars } from "../stores/modifiedBars";
 
   let apiData: number[] = [];
   let currentPage = 0;
   let paginatedData: number[] = [];
   const itemsPerPage = 2;
 
-  async function callApi() {
-    // TODO: replace with new endpoint that returns :\
-    /*
-        {
-              "download_paths":  [
-                [
-                  "old",
-                  "someurl.com"
-                ],
-                [
-                  "new",
-                  "someurl.com"
-                ]
-              ],
-              "masterbar_diffs": [1,3,4,56,7]
-          }
-       */
-    try {
-      const response = await fetch("http://127.0.0.1:8000/");
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log("API Response:", data);
-      apiData = data;
-    } catch (error) {
-      console.error("Error calling API:", error);
-    }
-  }
-
-  onMount(async () => {
-    await callApi();
+  // Subscribe to the store to get modified bars
+  modifiedBars.subscribe((value) => {
+    apiData = value;
   });
 
   $: {
