@@ -8,9 +8,8 @@
   let paginatedData: number[] = [];
   const itemsPerPage = 2;
 
-  // Subscribe to the store to get modified bars
   modifiedBars.subscribe((value) => {
-    apiData = value;
+    apiData = value.comparison_result; // Only access `comparison_result`
   });
 
   $: {

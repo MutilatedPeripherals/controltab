@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
+  import { modifiedBars } from "../stores/modifiedBars";
 
   export let masterBar: number;
 
@@ -7,6 +8,14 @@
   let rightTabRenderer: any = undefined;
   let redBeats: number[] = [];
   let greenBeats: number[] = [];
+
+  let originalTabUrl;
+  let uploadedTabUrl;
+
+  $: {
+    originalTabUrl = $modifiedBars.originalTabUrl;
+    uploadedTabUrl = $modifiedBars.uploadedTabUrl;
+  }
 
   const areBeatsDifferent = (beat1: any, beat2: any) => {
     return (
@@ -57,12 +66,12 @@
 
     leftTabRenderer = new window.alphaTab.AlphaTabApi(leftContainer, {
       ...commonSettings,
-      file: "old.gp",
+      file: originalTabUrl,
     });
 
     rightTabRenderer = new window.alphaTab.AlphaTabApi(rightContainer, {
       ...commonSettings,
-      file: "new.gp",
+      file: uploadedTabUrl,
     });
 
     let hasProcessedBeats = false;

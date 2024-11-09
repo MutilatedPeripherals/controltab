@@ -31,7 +31,7 @@
     }
 
     const formData = new FormData();
-    formData.append("user_tab", selectedFile); // Matches FastAPI's expected key
+    formData.append("user_tab", selectedFile);
 
     try {
       const response = await fetch(`http://127.0.0.1:8000/compare/${tabId}`, {
@@ -39,8 +39,15 @@
         body: formData,
       });
       if (!response.ok) throw new Error("File upload failed");
+
       const data = await response.json();
-      modifiedBars.set(data.comparison_result);
+
+      // Update the store with the comparison result and URLs
+      modifiedBars.set({
+        comparison_result: data.comparison_result,
+        originalTabUrl: data.original_file_url,
+        uploadedTabUrl: data.uploaded_file_url,
+      });
 
       alert("File uploaded successfully!");
       selectedFile = null;

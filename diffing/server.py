@@ -64,51 +64,53 @@ def read_root():
 @app.post("/compare/{tab_id}")
 async def compare_tabs(
     tab_id: int,  
-    user_tab: UploadFile = File(...),  
-    db: Session = Depends(get_db)
+    request: Request,  
+    user_tab: UploadFile = File(...), 
+    db: Session = Depends(get_db),
 ):
     # Retrieve the path of the original .gp file from the database
-    original_metadata = get_file_metadata(db, tab_id)
-    if not original_metadata:
+    original_gp_path = get_original_file_path_by_id(db, tab_id)
+    if not original_gp_path:
         raise HTTPException(status_code=404, detail="Original tab not found")
-    original_gp_path = original_metadata.filepath
 
-    try:
-        # Step 1: Extract `score.gpif` from the original .gp file
-        with zipfile.ZipFile(original_gp_path, 'r') as zip_ref:
-            temp_original_dir = tempfile.mkdtemp()
-            zip_ref.extractall(temp_original_dir)
-            original_gpif_path = Path(temp_original_dir) / "Content" / "score.gpif"
-            if not original_gpif_path.exists():
-                raise HTTPException(status_code=400, detail="Original .gp file does not contain score.gpif")
+    # Step 1: Extract `score.gpif` from the original .gp file
+    original_gpif_path = None
+    with zipfile.ZipFile(original_gp_path, 'r') as zip_ref:
+        temp_original_dir = tempfile.mkdtemp()
+        zip_ref.extractall(temp_original_dir)
+        original_gpif_path = Path(temp_original_dir) / "Content" / "score.gpif"
+        if not original_gpif_path.exists():
+            raise HTTPException(status_code=400, detail="Original .gp file does not contain score.gpif")
 
-        # Step 2: Save and extract `score.gpif` from the uploaded .gp file
-        user_gp_path = UPLOAD_DIR / user_tab.filename
-        with user_gp_path.open("wb") as f:
-            f.write(await user_tab.read())
+    # Step 2: Save and extract `score.gpif` from the uploaded .gp file
+    user_gp_path = UPLOAD_DIR / user_tab.filename
+    with user_gp_path.open("wb") as f:
+        shutil.copyfileobj(user_tab.file, f)
 
-        with zipfile.ZipFile(user_gp_path, 'r') as zip_ref:
-            temp_user_dir = tempfile.mkdtemp()
-            zip_ref.extractall(temp_user_dir)
-            user_gpif_path = Path(temp_user_dir) / "Content" / "score.gpif"
-            if not user_gpif_path.exists():
-                raise HTTPException(status_code=400, detail="Uploaded .gp file does not contain score.gpif")
+    user_gpif_path = None
+    with zipfile.ZipFile(user_gp_path, 'r') as zip_ref:
+        temp_user_dir = tempfile.mkdtemp()
+        zip_ref.extractall(temp_user_dir)
+        user_gpif_path = Path(temp_user_dir) / "Content" / "score.gpif"
+        if not user_gpif_path.exists():
+            raise HTTPException(status_code=400, detail="Uploaded .gp file does not contain score.gpif")
 
-        # Step 3: Compare the two `score.gpif` files
-        comparison_result = compare_gpif_files(str(original_gpif_path), str(user_gpif_path))
+    # Step 3: Compare the two `score.gpif` files
+    comparison_result = compare_gpif_files(str(original_gpif_path), str(user_gpif_path))
 
-        # Convert comparison_result to a JSON-serializable format if needed
-        if isinstance(comparison_result, set):
-            comparison_result = list(comparison_result)
+    # Cleanup: Remove temporary files
+    shutil.rmtree(temp_original_dir)  # Remove extracted original directory
+    shutil.rmtree(temp_user_dir)      # Remove extracted user directory
 
-        return JSONResponse(content={"comparison_result": comparison_result})
+    # Construct URLs for both original and uploaded files
+    original_file_url = f"{request.base_url}static/{Path(original_gp_path).name}"
+    uploaded_file_url = f"{request.base_url}static/{user_tab.filename}"
 
-    finally:
-        # Cleanup: Remove temporary files
-        if user_gp_path.exists():
-            user_gp_path.unlink()  # Delete the uploaded .gp file
-        shutil.rmtree(temp_original_dir, ignore_errors=True)  # Remove extracted original directory
-        shutil.rmtree(temp_user_dir, ignore_errors=True)  # Remove extracted user directory
+    return JSONResponse(content={
+        "comparison_result": list(comparison_result),
+        "original_file_url": original_file_url,
+        "uploaded_file_url": uploaded_file_url
+    })
 
 Base.metadata.create_all(bind=engine)
 
