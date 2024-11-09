@@ -1,9 +1,11 @@
 <script>
   import { onMount } from "svelte";
-
+  export let params;
   let selectedFile = null;
   let isDragging = false;
   let errorMessage = "";
+  let tabId = params.id;
+  let fileInput; // Reference the file input
 
   function handleFileChange(event) {
     const file = event.target.files[0];
@@ -27,11 +29,10 @@
     }
 
     const formData = new FormData();
-    formData.append("file", selectedFile);
-    formData.append("name", selectedFile.name); // Add the file name to the request
+    formData.append("user_tab", selectedFile); // Matches FastAPI's expected key
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/upload", {
+      const response = await fetch(`http://127.0.0.1:8000/compare/${tabId}`, {
         method: "POST",
         body: formData,
       });

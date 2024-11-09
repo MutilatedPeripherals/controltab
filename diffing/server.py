@@ -63,47 +63,52 @@ def read_root():
 
 @app.post("/compare/{tab_id}")
 async def compare_tabs(
-    tab_id: int,  # ID of the original tab
-    user_tab: UploadFile = File(...),  # Uploaded file from user
+    tab_id: int,  
+    user_tab: UploadFile = File(...),  
     db: Session = Depends(get_db)
 ):
     # Retrieve the path of the original .gp file from the database
-    original_gp_path = get_original_file_path_by_id(db, tab_id)
-    if not original_gp_path:
+    original_metadata = get_file_metadata(db, tab_id)
+    if not original_metadata:
         raise HTTPException(status_code=404, detail="Original tab not found")
+    original_gp_path = original_metadata.filepath
 
-    # Step 1: Extract `score.gpif` from the original .gp file
-    original_gpif_path = None
-    with zipfile.ZipFile(original_gp_path, 'r') as zip_ref:
-        temp_original_dir = tempfile.mkdtemp()
-        zip_ref.extractall(temp_original_dir)
-        original_gpif_path = Path(temp_original_dir) / "Content" / "score.gpif"
-        if not original_gpif_path.exists():
-            raise HTTPException(status_code=400, detail="Original .gp file does not contain score.gpif")
+    try:
+        # Step 1: Extract `score.gpif` from the original .gp file
+        with zipfile.ZipFile(original_gp_path, 'r') as zip_ref:
+            temp_original_dir = tempfile.mkdtemp()
+            zip_ref.extractall(temp_original_dir)
+            original_gpif_path = Path(temp_original_dir) / "Content" / "score.gpif"
+            if not original_gpif_path.exists():
+                raise HTTPException(status_code=400, detail="Original .gp file does not contain score.gpif")
 
-    # Step 2: Save and extract `score.gpif` from the uploaded .gp file
-    user_gp_path = UPLOAD_DIR / user_tab.filename
-    user_gpif_path = None
-    with user_gp_path.open("wb") as f:
-        f.write(await user_tab.read())
+        # Step 2: Save and extract `score.gpif` from the uploaded .gp file
+        user_gp_path = UPLOAD_DIR / user_tab.filename
+        with user_gp_path.open("wb") as f:
+            f.write(await user_tab.read())
 
-    with zipfile.ZipFile(user_gp_path, 'r') as zip_ref:
-        temp_user_dir = tempfile.mkdtemp()
-        zip_ref.extractall(temp_user_dir)
-        user_gpif_path = Path(temp_user_dir) / "Content" / "score.gpif"
-        if not user_gpif_path.exists():
-            raise HTTPException(status_code=400, detail="Uploaded .gp file does not contain score.gpif")
+        with zipfile.ZipFile(user_gp_path, 'r') as zip_ref:
+            temp_user_dir = tempfile.mkdtemp()
+            zip_ref.extractall(temp_user_dir)
+            user_gpif_path = Path(temp_user_dir) / "Content" / "score.gpif"
+            if not user_gpif_path.exists():
+                raise HTTPException(status_code=400, detail="Uploaded .gp file does not contain score.gpif")
 
-    # Step 3: Compare the two `score.gpif` files
-    comparison_result = compare_gpif_files(str(original_gpif_path), str(user_gpif_path))
+        # Step 3: Compare the two `score.gpif` files
+        comparison_result = compare_gpif_files(str(original_gpif_path), str(user_gpif_path))
 
-    # Cleanup: Remove temporary files
-    user_gp_path.unlink()  # Delete the uploaded .gp file
-    shutil.rmtree(temp_original_dir)  # Remove extracted original directory
-    shutil.rmtree(temp_user_dir)  # Remove extracted user directory
+        # Convert comparison_result to a JSON-serializable format if needed
+        if isinstance(comparison_result, set):
+            comparison_result = list(comparison_result)
 
-    return JSONResponse(content={"comparison_result": comparison_result})
+        return JSONResponse(content={"comparison_result": comparison_result})
 
+    finally:
+        # Cleanup: Remove temporary files
+        if user_gp_path.exists():
+            user_gp_path.unlink()  # Delete the uploaded .gp file
+        shutil.rmtree(temp_original_dir, ignore_errors=True)  # Remove extracted original directory
+        shutil.rmtree(temp_user_dir, ignore_errors=True)  # Remove extracted user directory
 
 Base.metadata.create_all(bind=engine)
 
