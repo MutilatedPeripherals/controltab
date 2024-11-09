@@ -141,6 +141,7 @@ def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]
 
 
 def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
+    print("HELLO HELLO HELLO HELLO HELLO HELLO")
     old_tree = etree.parse(old_xml)
     new_tree = etree.parse(new_xml)
 

@@ -1,3 +1,7 @@
 .idea
 
 diffing/venv
+.env
+venv
+.vscode
+files.db

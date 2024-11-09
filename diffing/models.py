@@ -1,32 +1,35 @@
-from pydantic import BaseModel, HttpUrl
-from typing import List, Optional, Union
+# models.py
+from pydantic import BaseModel
+from sqlalchemy import Column, Integer, String, DateTime
+from datetime import datetime
+from diffing.database import Base
 
-class AssetInfo(BaseModel):
-    id: str
-    application_id: str
-    s3: bool
-    type: str
-    source: Optional[str]
+class FileData(BaseModel):
+    url: str
+
+class Tab(BaseModel):
+    id: int
+    name: str
+    oldFile: FileData
+    newFile: FileData
+
+
+class FileMetadata(Base):
+    __tablename__ = "file_metadata"
+
+    id = Column(Integer, primary_key=True, index=True)
+    filename = Column(String, index=True)
+    filepath = Column(String)  # Path or URL to file
+    song_name = Column(String)  # New column for the song name
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+
+# Pydantic model for the response
+class Tab(BaseModel):
+    id: int
     filename: str
-    url: HttpUrl
-    thumb_url: Optional[HttpUrl] = None
-    size: int
-    field_key: str
-    checksum: str
+    song_name: str
+    filepath: str  # This could be a URL in production
+    uploaded_at: datetime
 
-class Record(BaseModel):
-    id: str
-    field_17: int
-    field_17_raw: int
-    field_16: str
-    field_16_raw: str
-    field_18: str
-    field_18_raw: AssetInfo
-    field_19: Optional[str] = None
-    field_19_raw: Union[AssetInfo, str, None] = None
-
-class ResponseModel(BaseModel):
-    total_pages: int
-    current_page: int
-    total_records: int
-    records: List[Record]
+    class Config:
+        orm_mode = True  # Enables ORM to Pydantic model conversion
