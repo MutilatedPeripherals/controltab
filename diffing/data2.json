@@ -124,12 +124,12 @@
                     {
                         "notes": [
                             {
-                                "step": "B",
+                                "step": "F",
                                 "accidental": "",
                                 "octave": 3,
-                                "fret": 7,
+                                "fret": 1,
                                 "string": 0,
-                                "midi": 47
+                                "midi": 41
                             }
                         ],
                         "dynamic": "MF",
@@ -138,12 +138,12 @@
                     {
                         "notes": [
                             {
-                                "step": "C",
-                                "accidental": "",
-                                "octave": 4,
-                                "fret": 8,
+                                "step": "F",
+                                "accidental": "#",
+                                "octave": 3,
+                                "fret": 2,
                                 "string": 0,
-                                "midi": 48
+                                "midi": 42
                             }
                         ],
                         "dynamic": "MF",

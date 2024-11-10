@@ -1,20 +1,22 @@
-<script>
-  import { onMount } from "svelte";
-  import { push } from "svelte-spa-router"; // Import push for redirection
-  export let params;
-  let selectedFile = null;
-  let isDragging = false;
-  let errorMessage = "";
-  let tabId = params.id;
-  let fileInput; // Reference the file input
+<script lang="ts">
+  import { push } from "svelte-spa-router";
   import { modifiedBars } from "../stores/modifiedBars";
 
-  function handleFileChange(event) {
-    const file = event.target.files[0];
+  export let params: { id: number };
+
+  let selectedFile: File | null = null;
+  let isDragging: boolean = false;
+  let errorMessage: string = "";
+  let tabId: number = params.id;
+  let fileInput: HTMLInputElement;
+
+  function handleFileChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const file = target.files ? target.files[0] : null;
     validateAndSetFile(file);
   }
 
-  function validateAndSetFile(file) {
+  function validateAndSetFile(file: File | null): void {
     if (file && file.name.endsWith(".gp")) {
       selectedFile = file;
       errorMessage = "";
@@ -24,7 +26,7 @@
     }
   }
 
-  async function handleUpload() {
+  async function handleUpload(): Promise<void> {
     if (!selectedFile) {
       errorMessage = "No file selected.";
       return;
@@ -42,17 +44,15 @@
 
       const data = await response.json();
 
-      // Update the store with the comparison result and URLs
       modifiedBars.set({
-        comparison_result: data.comparison_result,
-        originalTabUrl: data.original_file_url,
-        uploadedTabUrl: data.uploaded_file_url,
+        comparison_result: data.comparison_result as number[],
+        originalTabUrl: data.original_file_url as string,
+        uploadedTabUrl: data.uploaded_file_url as string,
       });
 
       alert("File uploaded successfully!");
       selectedFile = null;
 
-      // Redirect to the visualizer
       push("/visualizer");
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -60,19 +60,19 @@
     }
   }
 
-  function handleDragOver(event) {
+  function handleDragOver(event: DragEvent): void {
     event.preventDefault();
     isDragging = true;
   }
 
-  function handleDragLeave() {
+  function handleDragLeave(): void {
     isDragging = false;
   }
 
-  function handleDrop(event) {
+  function handleDrop(event: DragEvent): void {
     event.preventDefault();
     isDragging = false;
-    const file = event.dataTransfer.files[0];
+    const file = event.dataTransfer ? event.dataTransfer.files[0] : null;
     validateAndSetFile(file);
   }
 </script>
@@ -87,6 +87,8 @@
     on:dragover={handleDragOver}
     on:dragleave={handleDragLeave}
     on:drop={handleDrop}
+    role="button"
+    tabindex="0"
     class:isDragging
   >
     <p class="text-gray-500 text-center">

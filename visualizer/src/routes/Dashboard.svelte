@@ -1,8 +1,9 @@
-<script>
+<script lang="ts">
   import { onMount } from "svelte";
   import { push } from "svelte-spa-router";
+  import type { Tab } from "../types/TabTypes";
 
-  let tabs = [];
+  let tabs: Tab[] = [];
 
   async function fetchTabs() {
     try {
@@ -17,15 +18,15 @@
 
   onMount(fetchTabs);
 
-  function viewTab(id) {
+  function viewTab(id: number) {
     push(`/tabs/${id}`);
   }
 
-  function exportToPDF(id) {
+  function exportToPDF(id: number) {
     console.log("Exporting tab to PDF with id:", id);
   }
 
-  function suggestChange(id) {
+  function suggestChange(id: number) {
     console.log("Suggesting a change for tab with id:", id);
     push(`/tabs/${id}/compare`);
   }

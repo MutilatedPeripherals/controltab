@@ -9,7 +9,7 @@
   const itemsPerPage = 2;
 
   modifiedBars.subscribe((value) => {
-    apiData = value.comparison_result; // Only access `comparison_result`
+    apiData = value.comparison_result;
   });
 
   $: {

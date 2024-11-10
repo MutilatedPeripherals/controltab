@@ -19,17 +19,16 @@ class FileMetadata(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     filename = Column(String, index=True)
-    filepath = Column(String)  # Path or URL to file
-    song_name = Column(String)  # New column for the song name
+    filepath = Column(String) 
+    song_name = Column(String)
     uploaded_at = Column(DateTime, default=datetime.utcnow)
 
-# Pydantic model for the response
 class Tab(BaseModel):
     id: int
     filename: str
     song_name: str
-    filepath: str  # This could be a URL in production
+    filepath: str 
     uploaded_at: datetime
 
     class Config:
-        orm_mode = True  # Enables ORM to Pydantic model conversion
+        orm_mode = True
