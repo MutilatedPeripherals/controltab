@@ -11,10 +11,10 @@
   let selectedFile: File | null = null;
   let isDragging: boolean = false;
   let errorMessage: string = "";
-  let tabId: number = params.id;
+  let songId: number = params.id;
   let fileInput: HTMLInputElement;
 
-  const uploadMutation = useUploadTab(tabId);
+  const uploadMutation = useUploadTab(songId);
 
   function handleFileChange(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -47,9 +47,10 @@
           comparison_result: data.comparison_result,
           originalTabUrl: data.original_file_url,
           uploadedTabUrl: data.uploaded_file_url,
+          songId: songId,
         });
         selectedFile = null;
-        push("/visualizer");
+        push("/visualizer-legacy");
       },
       onError: (error) => {
         console.error("Error uploading file:", error);

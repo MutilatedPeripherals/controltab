@@ -2,6 +2,7 @@
   import Router from "svelte-spa-router";
   import routes from "./routes";
   import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
+  import { Toaster } from "svelte-french-toast";
 
   const queryClient = new QueryClient();
 </script>
@@ -29,6 +30,8 @@
 
   <main>
     <QueryClientProvider client={queryClient}>
+      <Toaster position="top-center" />
+
       <Router {routes} />
     </QueryClientProvider>
   </main>

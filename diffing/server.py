@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Request
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.responses import JSONResponse
@@ -8,9 +8,11 @@ from pathlib import Path
 from sqlalchemy.orm import Session
 from typing import List
 import tempfile
+from fastapi import Body
+from urllib.parse import urlparse
 
 from diffing.database import SessionLocal, engine, Base
-from diffing.models import Song, Tab
+from diffing.models import Song, SongMetadata
 from diffing.crud import (
     create_song_with_tab,
     get_song_with_tab,
@@ -46,26 +48,6 @@ def get_db():
 # Initialize database
 Base.metadata.create_all(bind=engine)
 
-@app.post("/upload")
-async def upload_tab(
-    song_name: str = Form(...),
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db)
-):
-    if not file.filename.endswith(".gp"):
-        raise HTTPException(status_code=400, detail="Only .gp files are allowed")
-
-    filename = f"{song_name}.gp"
-    file_path = UPLOAD_DIR / filename
-
-    # Save the uploaded file to the directory
-    with file_path.open("wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-
-    # Save metadata to the database for the song and associated tab
-    new_song = create_song_with_tab(db, title=song_name, filename=filename, filepath=str(file_path))
-    return {"id": new_song.id, "song_name": new_song.title, "tab_filename": filename, "path": str(file_path)}
-
 @app.get("/songs", response_model=List[Song])
 async def get_songs(db: Session = Depends(get_db)):
     songs = get_all_songs(db)
@@ -83,14 +65,6 @@ async def get_song(song_id: int, request: Request, db: Session = Depends(get_db)
 
     return song
 
-@app.get("/files/{song_id}")
-async def download_tab(song_id: int, request: Request, db: Session = Depends(get_db)):
-    file_path = get_tab_file_path(db, song_id)
-    if not file_path or not Path(file_path).exists():
-        raise HTTPException(status_code=404, detail="Tab file not found")
-
-    full_url = f"{request.base_url}static/{Path(file_path).name}"
-    return {"content_url": full_url}
 
 @app.post("/compare/{song_id}")
 async def compare_tabs(
@@ -158,3 +132,37 @@ async def create_song(
     song = create_song_with_tab(db, title=title, filename=filename, filepath=str(file_path))
     
     return song
+
+@app.delete("/songs/{song_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_song(song_id: int, db: Session = Depends(get_db)):
+    song = db.query(SongMetadata).filter(SongMetadata.id == song_id).first()
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+    
+    if song.tab:
+        db.delete(song.tab)
+    
+    db.delete(song)
+    db.commit()
+    return {"message": "Song deleted successfully"}
+
+
+@app.put("/songs/{song_id}/confirm-changes")
+async def confirm_changes(
+    song_id: int,
+    db: Session = Depends(get_db),
+    uploaded_file_url: str = Body(..., embed=True)  # Extract `uploaded_file_url` directly
+):
+    song = db.query(SongMetadata).filter(SongMetadata.id == song_id).first()
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+
+    # Parse the provided URL to extract the file path
+    uploaded_path = urlparse(uploaded_file_url).path
+    relative_path = Path(uploaded_path).relative_to("/static")
+
+    # Store the relative path in the database
+    song.tab.filepath = str(relative_path)
+    db.commit()
+
+    return {"message": "Tab updated successfully"}

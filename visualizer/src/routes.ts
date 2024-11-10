@@ -12,6 +12,12 @@ const routes: RouteDefinition = {
   "/dashboard": Dashboard as typeof SvelteComponent,
   "/tabs/:id": TabDetail as typeof SvelteComponent,
   "/tabs/:id/compare": CompareTabs as typeof SvelteComponent,
+  "/visualizer-legacy": wrap({
+    asyncComponent: () =>
+      import("./routes/VisualizerLegacy.svelte") as Promise<{
+        default: typeof SvelteComponent;
+      }>,
+  }),
   "/visualizer": wrap({
     asyncComponent: () =>
       import("./routes/Visualizer.svelte") as Promise<{
