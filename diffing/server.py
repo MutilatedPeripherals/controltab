@@ -23,7 +23,6 @@ from diffing.script2 import compare_gpif_files
 
 app = FastAPI()
 
-# CORS configuration
 origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
@@ -37,7 +36,6 @@ UPLOAD_DIR = Path("files")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=UPLOAD_DIR), name="static")
 
-# Dependency to get the database session
 def get_db():
     db = SessionLocal()
     try:
@@ -45,7 +43,6 @@ def get_db():
     finally:
         db.close()
 
-# Initialize database
 Base.metadata.create_all(bind=engine)
 
 @app.get("/songs", response_model=List[Song])
@@ -59,7 +56,6 @@ async def get_song(song_id: int, request: Request, db: Session = Depends(get_db)
     if not song:
         raise HTTPException(status_code=404, detail="Song not found")
 
-    # Modify the tab filepath to include the full URL for downloading
     if song.tab:
         song.tab.filepath = f"{request.base_url}static/{song.tab.filepath}"
 
@@ -72,18 +68,15 @@ async def compare_tabs(
     user_tab: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    # Get the relative file path from the database and construct the full path
     original_gp_filename = get_tab_file_path(db, song_id)
     if not original_gp_filename:
         raise HTTPException(status_code=404, detail="Original tab not found")
 
     original_gp_path = UPLOAD_DIR / original_gp_filename  # Construct the full path
 
-    # Verify if the file actually exists at this location
     if not original_gp_path.exists():
         raise HTTPException(status_code=404, detail="Original file not found on disk")
 
-    # Proceed with file processing as before...
     with zipfile.ZipFile(original_gp_path, 'r') as zip_ref:
         temp_original_dir = tempfile.mkdtemp()
         zip_ref.extractall(temp_original_dir)
@@ -91,7 +84,6 @@ async def compare_tabs(
         if not original_gpif_path.exists():
             raise HTTPException(status_code=400, detail="Original .gp file does not contain score.gpif")
 
-    # Continue with user file extraction and comparison as usual
     unique_filename = f"{uuid.uuid4()}.gp"
     user_gp_path = UPLOAD_DIR / unique_filename
     with user_gp_path.open("wb") as f:
@@ -104,10 +96,8 @@ async def compare_tabs(
         if not user_gpif_path.exists():
             raise HTTPException(status_code=400, detail="Uploaded .gp file does not contain score.gpif")
 
-    # Compare the two .gpif files
     comparison_result = compare_gpif_files(str(original_gpif_path), str(user_gpif_path))
 
-    # Cleanup temporary directories
     shutil.rmtree(temp_original_dir)
     shutil.rmtree(temp_user_dir)
 
@@ -129,16 +119,13 @@ async def create_song(
     if not tab_file.filename.endswith(".gp"):
         raise HTTPException(status_code=400, detail="Only .gp files are allowed")
 
-    # Generate a unique filename for the file to avoid conflicts
-    unique_filename = f"{uuid.uuid4()}.gp"
-    file_path = UPLOAD_DIR / unique_filename
+    unique_filename = f"{uuid.uuid4()}.gp"  
+    file_path = UPLOAD_DIR / unique_filename 
 
-    # Save the tab file with the unique name
     with file_path.open("wb") as buffer:
         shutil.copyfileobj(tab_file.file, buffer)
 
-    # Create song with tab in the database, store only the relative path
-    song = create_song_with_tab(db, title=title, filename=unique_filename, filepath=str(file_path.relative_to(UPLOAD_DIR)))
+    song = create_song_with_tab(db, title=title, filepath=str(file_path.relative_to(UPLOAD_DIR)))
     
     return song
 
@@ -165,11 +152,9 @@ async def confirm_changes(
     if not song:
         raise HTTPException(status_code=404, detail="Song not found")
 
-    # Parse the provided URL to extract the file path
     uploaded_path = urlparse(uploaded_file_url).path
     relative_path = Path(uploaded_path).relative_to("/static")
 
-    # Store the relative path in the database
     song.tab.filepath = str(relative_path)
     db.commit()
 

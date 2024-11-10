@@ -4,6 +4,7 @@
   import toast from "svelte-french-toast";
   import "@coderline/alphatab";
   import { useConfirmTabChange } from "../mutations/updateTabMutation";
+  import { push } from "svelte-spa-router";
 
   let originalTabUrl = "";
   let uploadedTabUrl = "";
@@ -32,7 +33,6 @@
   }
 
   function confirmChanges() {
-    debugger;
     if (!uploadedTabUrl || !songId) {
       toast.error(
         "Cannot confirm changes. Ensure all data is loaded correctly."
@@ -46,6 +46,7 @@
         onSuccess: () => {
           toast.success("Tab changes confirmed!");
           modifiedBars.update((bars) => ({ ...bars, uploadedTabUrl: "" }));
+          push(`/tabs/${songId}`); // Redirect to the song's tab page
         },
         onError: () => {
           toast.error("Failed to confirm changes. Please try again.");
@@ -67,8 +68,10 @@
     class="p-4 mb-6 text-yellow-800 bg-yellow-100 border border-yellow-300 rounded-lg"
   >
     <p class="text-center font-semibold">
-      ⚠️ You are currently using the legacy version of the tab visualizer. A new
-      version with version control, reviews, comments, and more is coming soon.
+      ⚠️ Welcome to the legacy version of the tab visualizer! 🚀 Exciting
+      updates are on the horizon: soon, you’ll be able to manage tab versions,
+      review changes, leave comments, and collaborate just like a pro. Stay
+      tuned—your ultimate tab management experience is coming soon!
     </p>
   </div>
 

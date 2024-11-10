@@ -11,6 +11,7 @@
   const songDataQuery = useFetchSongData(tabId);
   let container: HTMLDivElement;
 
+  // Re-render AlphaTab whenever the query succeeds or updates
   $: if ($songDataQuery.isSuccess) {
     tick().then(() => {
       renderSelectedTab($songDataQuery.data);
@@ -18,11 +19,14 @@
   }
 
   function renderSelectedTab(data: Song) {
-    console.log(data);
+    console.log("Rendering tab:", data);
     if (!window.alphaTab) {
       console.error("AlphaTab not loaded");
       return;
     }
+
+    // Clear previous AlphaTab instance (if any) by emptying container
+    container.innerHTML = "";
 
     const settings = {
       file: data.tab.filepath,
@@ -45,7 +49,7 @@
 
     const tabRenderer = new window.alphaTab.AlphaTabApi(container, settings);
     tabRenderer.postRenderFinished.on(() => {
-      console.log(`Tab ${data.tab.filename} rendered successfully.`);
+      console.log(`Tab ${data.tab.filepath} rendered successfully.`);
     });
   }
 

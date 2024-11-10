@@ -85,7 +85,7 @@
               {song.title}
             </h2>
             <p class="text-sm text-gray-600">
-              Tab filename: {song.tab.filename}
+              Tab filepath: {song.tab.filepath}
             </p>
             <p class="text-sm text-gray-600">
               Uploaded at: {new Date(song.tab.uploaded_at).toLocaleString()}
