@@ -1,39 +1,34 @@
 <script lang="ts">
-  import { onMount, tick } from "svelte";
+  import { tick } from "svelte";
   import { push } from "svelte-spa-router";
-  import "@coderline/alphatab"; // Import AlphaTab for rendering
+  import "@coderline/alphatab";
+  import { useFetchSongData, type Song } from "../queries/getSongQuery";
 
-  let tabData;
+  export let params: { id: number };
+  const tabId = params.id;
+
+  const songDataQuery = useFetchSongData(tabId);
   let container: HTMLDivElement;
-  export let params;
-  const tabId = params.id; // Get the tab ID from the route parameters
 
-  async function fetchTabData() {
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/files/${tabId}`);
-      if (!response.ok)
-        throw new Error("Failed to fetch tab data from FastAPI");
-      tabData = await response.json();
-      await tick(); // Ensure the DOM is updated before rendering the tab
-      renderSelectedTab();
-    } catch (error) {
-      console.error("Error fetching tab data:", error);
-    }
+  $: if ($songDataQuery.isSuccess) {
+    tick().then(() => {
+      renderSelectedTab($songDataQuery.data);
+    });
   }
 
-  function renderSelectedTab() {
+  function renderSelectedTab(data: Song) {
     if (!window.alphaTab) {
       console.error("AlphaTab not loaded");
       return;
     }
 
     const settings = {
-      file: tabData.content_url, // URL to the .gp file provided by the API
+      file: data.content_url,
       core: {
         engine: "svg",
       },
       display: {
-        layoutMode: 0, // Set layout to page mode for vertical scrolling
+        layoutMode: 0,
       },
       rendering: {
         useWorkers: false,
@@ -46,41 +41,37 @@
       },
     };
 
-    // Initialize AlphaTabApi in the container with the selected file
     const tabRenderer = new window.alphaTab.AlphaTabApi(container, settings);
-
     tabRenderer.postRenderFinished.on(() => {
-      console.log(`Tab ${tabData.filename} rendered successfully.`);
+      console.log(`Tab ${data.song_name} rendered successfully.`);
     });
   }
 
   function suggestChange() {
     console.log("Suggest a change clicked");
-    push(`/tabs/${tabId}/compare`); // Navigate to the compare route with tabId
+    push(`/tabs/${tabId}/compare`);
   }
-
-  onMount(fetchTabData); // Fetch tab data and render on component mount
 </script>
 
 <div class="container mx-auto p-6 bg-base-200 min-h-screen rounded-lg">
-  {#if tabData}
+  {#if $songDataQuery.isLoading}
+    <p class="text-center text-gray-500">Loading tab data...</p>
+  {:else if $songDataQuery.isError}
+    <p class="text-center text-red-500">Failed to load tab data.</p>
+  {:else if $songDataQuery.isSuccess}
     <h2 class="text-3xl font-semibold text-center mb-4 text-gray-800">
-      {tabData.filename}
+      {$songDataQuery.data.song_name}
     </h2>
 
-    <!-- Container where AlphaTab will render the tab -->
     <div
       bind:this={container}
       class="w-full h-[500px] bg-white border border-gray-300 rounded-lg shadow-md overflow-y-auto overflow-x-hidden"
     ></div>
 
-    <!-- Suggest a change button -->
     <div class="flex justify-center mt-6">
       <button on:click={suggestChange} class="btn btn-primary">
         Suggest a Change
       </button>
     </div>
-  {:else}
-    <p class="text-center text-gray-500">Loading tab data...</p>
   {/if}
 </div>

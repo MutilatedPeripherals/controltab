@@ -1,6 +1,10 @@
 <script lang="ts">
   import { push } from "svelte-spa-router";
   import { modifiedBars } from "../stores/modifiedBars";
+  import {
+    useUploadTab,
+    type CompareResponse,
+  } from "../mutations/uploadTabMutation";
 
   export let params: { id: number };
 
@@ -9,6 +13,8 @@
   let errorMessage: string = "";
   let tabId: number = params.id;
   let fileInput: HTMLInputElement;
+
+  const uploadMutation = useUploadTab(tabId);
 
   function handleFileChange(event: Event): void {
     const target = event.target as HTMLInputElement;
@@ -26,7 +32,7 @@
     }
   }
 
-  async function handleUpload(): Promise<void> {
+  function handleUpload() {
     if (!selectedFile) {
       errorMessage = "No file selected.";
       return;
@@ -35,29 +41,21 @@
     const formData = new FormData();
     formData.append("user_tab", selectedFile);
 
-    try {
-      const response = await fetch(`http://127.0.0.1:8000/compare/${tabId}`, {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) throw new Error("File upload failed");
-
-      const data = await response.json();
-
-      modifiedBars.set({
-        comparison_result: data.comparison_result as number[],
-        originalTabUrl: data.original_file_url as string,
-        uploadedTabUrl: data.uploaded_file_url as string,
-      });
-
-      alert("File uploaded successfully!");
-      selectedFile = null;
-
-      push("/visualizer");
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      errorMessage = "File upload failed. Please try again.";
-    }
+    $uploadMutation.mutate(formData, {
+      onSuccess: (data: CompareResponse) => {
+        modifiedBars.set({
+          comparison_result: data.comparison_result,
+          originalTabUrl: data.original_file_url,
+          uploadedTabUrl: data.uploaded_file_url,
+        });
+        selectedFile = null;
+        push("/visualizer");
+      },
+      onError: (error) => {
+        console.error("Error uploading file:", error);
+        errorMessage = "File upload failed. Please try again.";
+      },
+    });
   }
 
   function handleDragOver(event: DragEvent): void {
@@ -123,9 +121,9 @@
     <button
       class="btn btn-primary"
       on:click={handleUpload}
-      disabled={!selectedFile}
+      disabled={!selectedFile || $uploadMutation.isPending}
     >
-      Upload File
+      {#if $uploadMutation.isPending}Uploading...{:else}Upload File{/if}
     </button>
   </div>
 </div>
