@@ -1,15 +1,16 @@
 <script lang="ts">
   import { push } from "svelte-spa-router";
-  import { useFetchTabs } from "../queries/getTabsQuery";
-  import type { Tab } from "../types/TabTypes";
+  import type { Tab } from "../types/Tab";
+  import { useFetchSongs } from "../queries/getSongsQuery";
+  import type { Song } from "../types/Song";
 
-  let data: Tab[] | undefined;
+  let data: Song[] | undefined;
   let isLoading = false;
   let isError = false;
   let error: Error | null = null;
 
-  const tabsQuery = useFetchTabs();
-  $: ({ data, isLoading, isError, error } = $tabsQuery);
+  const songsQuery = useFetchSongs();
+  $: ({ data, isLoading, isError, error } = $songsQuery);
 
   function viewTab(id: number) {
     push(`/tabs/${id}`);
@@ -27,43 +28,45 @@
 
 <div class="container mx-auto p-6 bg-base-200 min-h-screen rounded-lg">
   <h1 class="text-3xl font-semibold text-center mb-8 text-gray-800">
-    Guitar Tabs
+    Your songs
   </h1>
 
   {#if isLoading}
-    <p class="text-center text-gray-500">Loading tabs...</p>
+    <p class="text-center text-gray-500">Loading songs...</p>
   {:else if isError}
     <p class="text-center text-red-500">
-      Failed to load tabs: {error?.message}
+      Failed to load songs: {error?.message}
     </p>
   {:else if data}
     <div class="grid gap-6">
-      {#each data as tab (tab.id)}
+      {#each data as song (song.id)}
         <div class="card bg-base-100 shadow-lg p-4 rounded-lg">
           <div class="card-body">
             <h2 class="card-title text-lg font-medium text-gray-800">
-              {tab.song_name}
+              {song.title}
             </h2>
-            <p class="text-sm text-gray-600">Filename: {tab.filename}</p>
             <p class="text-sm text-gray-600">
-              Uploaded at: {new Date(tab.uploaded_at).toLocaleString()}
+              Tab filename: {song.tab.filename}
+            </p>
+            <p class="text-sm text-gray-600">
+              Uploaded at: {new Date(song.tab.uploaded_at).toLocaleString()}
             </p>
             <div class="mt-4 flex justify-end space-x-4">
               <button
                 class="btn btn-outline btn-primary btn-sm"
-                on:click={() => viewTab(tab.id)}
+                on:click={() => viewTab(song.tab.id)}
               >
                 View Tab
               </button>
               <button
                 class="btn btn-primary btn-sm"
-                on:click={() => exportToPDF(tab.id)}
+                on:click={() => exportToPDF(song.tab.id)}
               >
                 Export to PDF
               </button>
               <button
                 class="btn btn-outline btn-secondary btn-sm"
-                on:click={() => suggestChange(tab.id)}
+                on:click={() => suggestChange(song.tab.id)}
               >
                 Suggest a Change
               </button>

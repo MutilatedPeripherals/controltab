@@ -2,7 +2,8 @@
   import { tick } from "svelte";
   import { push } from "svelte-spa-router";
   import "@coderline/alphatab";
-  import { useFetchSongData, type Song } from "../queries/getSongQuery";
+  import { useFetchSongData } from "../queries/getSongQuery";
+  import type { Song } from "../types/Song";
 
   export let params: { id: number };
   const tabId = params.id;
@@ -17,13 +18,14 @@
   }
 
   function renderSelectedTab(data: Song) {
+    console.log(data);
     if (!window.alphaTab) {
       console.error("AlphaTab not loaded");
       return;
     }
 
     const settings = {
-      file: data.content_url,
+      file: data.tab.filepath,
       core: {
         engine: "svg",
       },
@@ -43,7 +45,7 @@
 
     const tabRenderer = new window.alphaTab.AlphaTabApi(container, settings);
     tabRenderer.postRenderFinished.on(() => {
-      console.log(`Tab ${data.song_name} rendered successfully.`);
+      console.log(`Tab ${data.tab.filename} rendered successfully.`);
     });
   }
 
@@ -60,7 +62,7 @@
     <p class="text-center text-red-500">Failed to load tab data.</p>
   {:else if $songDataQuery.isSuccess}
     <h2 class="text-3xl font-semibold text-center mb-4 text-gray-800">
-      {$songDataQuery.data.song_name}
+      {$songDataQuery.data.title}
     </h2>
 
     <div

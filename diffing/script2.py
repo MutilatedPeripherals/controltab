@@ -118,10 +118,10 @@ def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]
 
     # First ensure we handle different lengths
     max_length = max(len(old_gpif), len(new_gpif))
-    with open("data.json", "w") as file:
-        json.dump([asdict(master_bar) for master_bar in old_gpif], file, indent=4)
-    with open("data2.json", "w") as file:
-        json.dump([asdict(master_bar) for master_bar in new_gpif], file, indent=4)
+    #with open("data.json", "w") as file:
+    #    json.dump([asdict(master_bar) for master_bar in old_gpif], file, indent=4)
+    #with open("data2.json", "w") as file:
+    #    json.dump([asdict(master_bar) for master_bar in new_gpif], file, indent=4)
             
     for i in range(max_length):
         # If one file has more master bars than the other, mark as changed

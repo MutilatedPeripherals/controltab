@@ -1,51 +1,39 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends, Request
-import httpx
-import aiofiles
-import aiofiles.os
-import tempfile
-import zipfile
-from diffing.script2 import compare_gpif_files
-from starlette.responses import JSONResponse
-from typing import List
-from diffing.models import Tab
-from diffing.crud import create_file_metadata, get_file_metadata
-from diffing.database import SessionLocal, engine, Base
-from pathlib import Path
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
-from sqlalchemy.orm import Session
-import shutil
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from diffing.crud import get_all_tabs
-from diffing.crud import get_original_file_path_by_id
+from starlette.responses import JSONResponse
+import shutil
+import zipfile
+from pathlib import Path
+from sqlalchemy.orm import Session
+from typing import List
+import tempfile
+
+from diffing.database import SessionLocal, engine, Base
+from diffing.models import Song, Tab
+from diffing.crud import (
+    create_song_with_tab,
+    get_song_with_tab,
+    get_all_songs,
+    get_tab_file_path
+)
+from diffing.script2 import compare_gpif_files
 
 app = FastAPI()
 
-# Define the origins that are allowed to make requests to your API
-origins = [
-    "*",  # Allow all
-]
-
-
-
-UPLOAD_DIR = Path("files")
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-
-
+# CORS configuration
+origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # List of allowed origins
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],  # You can restrict methods if needed, e.g. ["GET", "POST"]
-    allow_headers=["*"],  # You can restrict headers if needed
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-app.mount("/static", StaticFiles(directory=UPLOAD_DIR), name="static")
-
-# Directory for storing uploaded files
 UPLOAD_DIR = Path("files")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=UPLOAD_DIR), name="static")
 
 # Dependency to get the database session
 def get_db():
@@ -55,26 +43,67 @@ def get_db():
     finally:
         db.close()
 
+# Initialize database
+Base.metadata.create_all(bind=engine)
 
-@app.get("/")
-def read_root():
-    x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
-    return x
+@app.post("/upload")
+async def upload_tab(
+    song_name: str = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    if not file.filename.endswith(".gp"):
+        raise HTTPException(status_code=400, detail="Only .gp files are allowed")
 
-@app.post("/compare/{tab_id}")
+    filename = f"{song_name}.gp"
+    file_path = UPLOAD_DIR / filename
+
+    # Save the uploaded file to the directory
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # Save metadata to the database for the song and associated tab
+    new_song = create_song_with_tab(db, title=song_name, filename=filename, filepath=str(file_path))
+    return {"id": new_song.id, "song_name": new_song.title, "tab_filename": filename, "path": str(file_path)}
+
+@app.get("/songs", response_model=List[Song])
+async def get_songs(db: Session = Depends(get_db)):
+    songs = get_all_songs(db)
+    return songs
+
+@app.get("/songs/{song_id}")
+async def get_song(song_id: int, request: Request, db: Session = Depends(get_db)):
+    song = get_song_with_tab(db, song_id)
+    if not song:
+        raise HTTPException(status_code=404, detail="Song not found")
+
+    # Modify the tab filepath to include the full URL for downloading
+    if song.tab:
+        song.tab.filepath = f"{request.base_url}static/{song.tab.filename}"
+
+    return song
+
+@app.get("/files/{song_id}")
+async def download_tab(song_id: int, request: Request, db: Session = Depends(get_db)):
+    file_path = get_tab_file_path(db, song_id)
+    if not file_path or not Path(file_path).exists():
+        raise HTTPException(status_code=404, detail="Tab file not found")
+
+    full_url = f"{request.base_url}static/{Path(file_path).name}"
+    return {"content_url": full_url}
+
+@app.post("/compare/{song_id}")
 async def compare_tabs(
-    tab_id: int,  
-    request: Request,  
-    user_tab: UploadFile = File(...), 
+    song_id: int,
+    request: Request,
+    user_tab: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
-    # Retrieve the path of the original .gp file from the database
-    original_gp_path = get_original_file_path_by_id(db, tab_id)
+    original_gp_path = get_tab_file_path(db, song_id)
     if not original_gp_path:
         raise HTTPException(status_code=404, detail="Original tab not found")
 
-    # Step 1: Extract `score.gpif` from the original .gp file
-    original_gpif_path = None
+    # Extract score.gpif from the original file
     with zipfile.ZipFile(original_gp_path, 'r') as zip_ref:
         temp_original_dir = tempfile.mkdtemp()
         zip_ref.extractall(temp_original_dir)
@@ -82,12 +111,11 @@ async def compare_tabs(
         if not original_gpif_path.exists():
             raise HTTPException(status_code=400, detail="Original .gp file does not contain score.gpif")
 
-    # Step 2: Save and extract `score.gpif` from the uploaded .gp file
+    # Save and extract score.gpif from the uploaded user tab
     user_gp_path = UPLOAD_DIR / user_tab.filename
     with user_gp_path.open("wb") as f:
         shutil.copyfileobj(user_tab.file, f)
 
-    user_gpif_path = None
     with zipfile.ZipFile(user_gp_path, 'r') as zip_ref:
         temp_user_dir = tempfile.mkdtemp()
         zip_ref.extractall(temp_user_dir)
@@ -95,14 +123,13 @@ async def compare_tabs(
         if not user_gpif_path.exists():
             raise HTTPException(status_code=400, detail="Uploaded .gp file does not contain score.gpif")
 
-    # Step 3: Compare the two `score.gpif` files
+    # Compare the two .gpif files
     comparison_result = compare_gpif_files(str(original_gpif_path), str(user_gpif_path))
 
-    # Cleanup: Remove temporary files
-    shutil.rmtree(temp_original_dir)  # Remove extracted original directory
-    shutil.rmtree(temp_user_dir)      # Remove extracted user directory
+    # Cleanup temporary directories
+    shutil.rmtree(temp_original_dir)
+    shutil.rmtree(temp_user_dir)
 
-    # Construct URLs for both original and uploaded files
     original_file_url = f"{request.base_url}static/{Path(original_gp_path).name}"
     uploaded_file_url = f"{request.base_url}static/{user_tab.filename}"
 
@@ -112,44 +139,22 @@ async def compare_tabs(
         "uploaded_file_url": uploaded_file_url
     })
 
-Base.metadata.create_all(bind=engine)
-
-@app.post("/upload")
-async def upload_tab(
-    song_name: str = Form(...), 
-    file: UploadFile = File(...), 
-    db: Session = Depends(get_db)
+@app.post("/songs", response_model=Song)
+async def create_song(
+    title: str = Form(...),
+    tab_file: UploadFile = File(...),
+    db: Session = Depends(get_db),
 ):
-    if not file.filename.endswith(".gp"):
+    if not tab_file.filename.endswith(".gp"):
         raise HTTPException(status_code=400, detail="Only .gp files are allowed")
 
-    filename = f"{song_name}.gp"
+    # Save the tab file to the upload directory
+    filename = f"{title}_{tab_file.filename}"
     file_path = UPLOAD_DIR / filename
-
     with file_path.open("wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        shutil.copyfileobj(tab_file.file, buffer)
 
-    # Save metadata to the database, including song_name
-    db_file = create_file_metadata(db, filename=filename, filepath=str(file_path), song_name=song_name)
-    return {"id": db_file.id, "filename": db_file.filename, "path": db_file.filepath}
-
-@app.get("/files/{file_id}")
-async def download_file(file_id: int, request: Request, db: Session = Depends(get_db)):
-    db_file = get_file_metadata(db, file_id)
-    if db_file is None:
-        raise HTTPException(status_code=404, detail="File not found")
-
-    file_path = Path(db_file.filepath)
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File not found on disk")
-
-    # Construct the full URL for accessing the file through /static
-    full_url = f"{request.base_url}static/{db_file.filename}"
-
-    return {"filename": db_file.filename, "content_url": full_url}
-
-@app.get("/tabs", response_model=list[Tab])
-async def get_tabs(db: Session = Depends(get_db)):
-    tabs = get_all_tabs(db)
-    return tabs
-
+    # Create song with tab in the database
+    song = create_song_with_tab(db, title=title, filename=filename, filepath=str(file_path))
+    
+    return song
