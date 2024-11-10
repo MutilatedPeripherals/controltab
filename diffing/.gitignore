@@ -2,3 +2,6 @@
 __pycache__
 .idea
 .env
+
+data.json
+data2.json
