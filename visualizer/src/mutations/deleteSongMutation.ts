@@ -1,18 +1,12 @@
-// src/mutations/deleteSongMutation.ts
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
+import axiosInstance from "../axiosInstance";
 
 export function useDeleteSong() {
   const queryClient = useQueryClient();
 
   return createMutation<void, Error, number>({
     mutationFn: async (songId: number) => {
-      const response = await fetch(`http://127.0.0.1:8000/songs/${songId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete song");
-      }
+      await axiosInstance.delete(`/songs/${songId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["songs"] });

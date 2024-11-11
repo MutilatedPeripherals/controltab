@@ -3,9 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
+from diffing.auth import authentication
 from diffing.config import UPLOAD_DIR
 from diffing.database import initialize_database
-from diffing.routers import songs, comparison
+from diffing.routers import bands, songs, comparison
 
 app = FastAPI()
 
@@ -28,3 +29,5 @@ initialize_database()
 # Include Routers
 app.include_router(songs.router)
 app.include_router(comparison.router)
+app.include_router(bands.router)
+app.include_router(authentication.router)

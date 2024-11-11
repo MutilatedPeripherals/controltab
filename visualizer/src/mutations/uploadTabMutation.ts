@@ -1,4 +1,6 @@
+// src/mutations/uploadTabMutation.ts
 import { createMutation } from "@tanstack/svelte-query";
+import axiosInstance from "../axiosInstance";
 
 export interface CompareResponse {
   comparison_result: number[];
@@ -9,14 +11,11 @@ export interface CompareResponse {
 export function useUploadTab(tabId: number) {
   return createMutation<CompareResponse, Error, FormData>({
     mutationFn: async (formData: FormData) => {
-      const response = await fetch(`http://127.0.0.1:8000/compare/${tabId}`, {
-        method: "POST",
-        body: formData,
+      const response = await axiosInstance.post(`/compare/${tabId}`, formData, {
+        transformRequest: [(data) => data],
       });
-      if (!response.ok) {
-        throw new Error("File upload failed");
-      }
-      return response.json();
+
+      return response.data;
     },
   });
 }

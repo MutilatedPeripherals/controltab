@@ -4,6 +4,15 @@ import tempfile
 from pathlib import Path
 from fastapi import UploadFile
 import zipfile
+import string
+import secrets
+import jwt
+from datetime import datetime, timedelta
+
+
+def generate_access_code(length: int = 10) -> str:
+    characters = string.ascii_letters + string.digits
+    return ''.join(secrets.choice(characters) for _ in range(length))
 
 def save_uploaded_file(upload_file: UploadFile, upload_dir: Path) -> Path:
     unique_filename = f"{uuid.uuid4()}.gp"
@@ -24,4 +33,3 @@ def extract_gpif(gp_path: Path) -> Path:
 def compare_gpif_files(original_gpif_path: str, user_gpif_path: str):
     # Implement comparison logic here, possibly returning a list or JSON structure
     return []
- 

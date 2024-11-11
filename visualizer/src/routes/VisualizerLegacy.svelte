@@ -14,7 +14,6 @@
 
   const confirmTabChangeMutation = useConfirmTabChange();
 
-  // Subscribe to the modifiedBars store to extract data and update UI
   modifiedBars.subscribe((bars) => {
     originalTabUrl = bars.originalTabUrl;
     uploadedTabUrl = bars.uploadedTabUrl;

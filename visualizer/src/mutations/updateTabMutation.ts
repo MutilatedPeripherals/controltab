@@ -1,4 +1,5 @@
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
+import axiosInstance from "../axiosInstance";
 
 export function useConfirmTabChange() {
   const queryClient = useQueryClient();
@@ -11,20 +12,14 @@ export function useConfirmTabChange() {
       songId: number;
       uploadedFileUrl: string;
     }) => {
-      const response = await fetch(
-        `http://127.0.0.1:8000/songs/${songId}/confirm-changes`,
+      const response = await axiosInstance.put(
+        `/songs/${songId}/confirm-changes`,
         {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ uploaded_file_url: uploadedFileUrl }),
+          uploaded_file_url: uploadedFileUrl,
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to confirm tab changes");
-      }
-
-      return response.json();
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["songs"] });
