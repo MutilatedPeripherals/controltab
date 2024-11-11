@@ -3,7 +3,7 @@ import json
 from lxml import etree
 from dataclasses import dataclass, asdict
 from typing import List, Set
-
+import os
 
 @dataclass
 class Note:
@@ -35,7 +35,7 @@ class MasterBar:
     bars: List[Bar]
 
 
-def decompress_gpif(tree, filepath):
+def materialize_gpif(tree, filepath):
     master_bars = []
 
     # Build lookup tables
@@ -117,9 +117,10 @@ def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]
 
     max_length = max(len(old_gpif), len(new_gpif))
 
-    with open("old.json", "w") as file:
+    os.makedirs("tmp", exist_ok=True)
+    with open("tmp/old.json", "w") as file:
        json.dump([asdict(master_bar) for master_bar in old_gpif], file, indent=4)
-    with open("new.json", "w") as file:
+    with open("tmp/new.json", "w") as file:
        json.dump([asdict(master_bar) for master_bar in new_gpif], file, indent=4)
 
     for i in range(max_length):
@@ -143,14 +144,13 @@ def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
     old_tree = etree.parse(old_xml)
     new_tree = etree.parse(new_xml)
 
-    old_gpif = decompress_gpif(old_tree, old_xml)
-    new_gpif = decompress_gpif(new_tree, new_xml)
+    old_gpif = materialize_gpif(old_tree, old_xml)
+    new_gpif = materialize_gpif(new_tree, new_xml)
 
     return find_changed_masterbars(old_gpif, new_gpif)
 
 
 if __name__ == "__main__":
-    import os
     __DIR__ = os.path.dirname(os.path.abspath(__file__))
 
     test_data_dir = os.path.join(__DIR__, 'tests', 'test_data')

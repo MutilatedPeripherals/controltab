@@ -3,5 +3,4 @@ __pycache__
 .idea
 .env
 files
-data.json
-data2.json
+tmp
