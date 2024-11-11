@@ -70,7 +70,7 @@ def decompress_gpif(tree, filepath):
                     if note_ids is not None:
                          note_ids = note_ids.text.split()
                     else:
-                        print(f"beat {beat_id} from voice {voice_id} from bar {bar_id} in file {filepath} has no notes!!!")
+                        #print(f"beat {beat_id} from voice {voice_id} from bar {bar_id} in file {filepath} has no notes!!!")
                         continue
 
                     # Materialize notes in the beat
@@ -109,20 +109,19 @@ def decompress_gpif(tree, filepath):
         )
         master_bars.append(master_bar_obj)
 
-    print(f"Amount of master bars: {len(master_bars)}")
     return master_bars
 
 
 def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]) -> Set[int]:
     changed_indexes = set()
 
-    # First ensure we handle different lengths
     max_length = max(len(old_gpif), len(new_gpif))
-    #with open("data.json", "w") as file:
-    #    json.dump([asdict(master_bar) for master_bar in old_gpif], file, indent=4)
-    #with open("data2.json", "w") as file:
-    #    json.dump([asdict(master_bar) for master_bar in new_gpif], file, indent=4)
-            
+
+    with open("old.json", "w") as file:
+       json.dump([asdict(master_bar) for master_bar in old_gpif], file, indent=4)
+    with open("new.json", "w") as file:
+       json.dump([asdict(master_bar) for master_bar in new_gpif], file, indent=4)
+
     for i in range(max_length):
         # If one file has more master bars than the other, mark as changed
         if i >= len(old_gpif) or i >= len(new_gpif):
@@ -141,7 +140,6 @@ def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]
 
 
 def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
-    print("HELLO HELLO HELLO HELLO HELLO HELLO")
     old_tree = etree.parse(old_xml)
     new_tree = etree.parse(new_xml)
 
@@ -152,7 +150,25 @@ def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
 
 
 if __name__ == "__main__":
-    # x = compare_gpif_files('./simple/Empty/Content/score.gpif', './simple/Empty2/Content/score.gpif')
-    x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
+    import os
 
-    print(f"Indexes of MasterBars with changes: {x}")
+    test_data_dir = os.path.join('tests', 'test_data')
+    score_a_path = os.path.join(test_data_dir, 'simple_old.gpif')
+    score_b_path = os.path.join(test_data_dir, 'simple_new.gpif')
+    x = compare_gpif_files(score_a_path, score_b_path)
+
+    print(f"Indexes of MasterBars with changes between file {score_a_path} and {score_b_path}: {x}")
+
+    test_data_dir = os.path.join('tests', 'test_data')
+    score_a_path = os.path.join(test_data_dir, 'dissentgospel_old.gpif')
+    score_b_path = os.path.join(test_data_dir, 'dissentgospel_new.gpif')
+    x = compare_gpif_files(score_a_path, score_b_path)
+
+    print(f"Indexes of MasterBars with changes between file {score_a_path} and {score_b_path}: {x}")
+
+    test_data_dir = os.path.join('tests', 'test_data')
+    score_a_path = os.path.join(test_data_dir, 'jesusisalive_old.gpif')
+    score_b_path = os.path.join(test_data_dir, 'jesusisalive_new.gpif')
+    x = compare_gpif_files(score_a_path, score_b_path)
+
+    print(f"Indexes of MasterBars with changes between file {score_a_path} and {score_b_path}: {x}")
