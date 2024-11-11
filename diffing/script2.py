@@ -151,22 +151,23 @@ def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
 
 if __name__ == "__main__":
     import os
+    __DIR__ = os.path.dirname(os.path.abspath(__file__))
 
-    test_data_dir = os.path.join('tests', 'test_data')
+    test_data_dir = os.path.join(__DIR__, 'tests', 'test_data')
     score_a_path = os.path.join(test_data_dir, 'simple_old.gpif')
     score_b_path = os.path.join(test_data_dir, 'simple_new.gpif')
     x = compare_gpif_files(score_a_path, score_b_path)
 
     print(f"Indexes of MasterBars with changes between file {score_a_path} and {score_b_path}: {x}")
 
-    test_data_dir = os.path.join('tests', 'test_data')
+    test_data_dir = os.path.join(__DIR__, 'tests', 'test_data')
     score_a_path = os.path.join(test_data_dir, 'dissentgospel_old.gpif')
     score_b_path = os.path.join(test_data_dir, 'dissentgospel_new.gpif')
     x = compare_gpif_files(score_a_path, score_b_path)
 
     print(f"Indexes of MasterBars with changes between file {score_a_path} and {score_b_path}: {x}")
 
-    test_data_dir = os.path.join('tests', 'test_data')
+    test_data_dir = os.path.join(__DIR__, 'tests', 'test_data')
     score_a_path = os.path.join(test_data_dir, 'jesusisalive_old.gpif')
     score_b_path = os.path.join(test_data_dir, 'jesusisalive_new.gpif')
     x = compare_gpif_files(score_a_path, score_b_path)

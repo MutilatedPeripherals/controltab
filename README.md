@@ -1,28 +1,30 @@
 # controltab
 
-OR
+## Backend setup
 
-- [X] get text represenation of tabs -> unzip gp (guitarpro7) -> Content/score.gpif
-- [X] repackage to .gp file after changing the .gpif file. in the folder which contains the `VERSION` and `Content` we run `zip -r new.gp ./*`
-- [ ] given a line number in a gpif file, output a Bar(notes: Note[]) structure.
-    - Score > Track > Staff > Bar > Voice > Beat > Note
-    - def noteIdFromLineNumber(lineNumber: number): number
-    - now parse the full bars to notes
-    - and somewhere take the note id and get only the relevant bar or whatever
+```bash
+cd diffing
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
 
-* Given a note id (3), find corresponding beat with <Notes> containing the note id
-* find the voice by the beat
-* find the bar by the voice
+### Run tests
 
-- edge case - if a note is reused, it resolves to all the voices where the note is used. Then how do we know which bar actually changed
+```bash
+pytest
+```
 
-THEN
+### Start the server
 
-- [ ] diff 2 xml files
-- [ ] recognize bar(s) from the diff
-- [ ] extract the bars to a nex xml file
-- [ ] transform new xmls to guitar pro
-- [ ] transfer guitar pro to js visualization lib
+```bash
+fastapi dev main.py
+```
 
-nice to have
-- [ ] paint notes?
+## Frontend setup
+
+```bash
+cd visualizer
+npm install
+npm run dev
+```
