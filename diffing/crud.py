@@ -2,18 +2,18 @@ from sqlalchemy.orm import Session, joinedload
 from diffing.models import SongMetadata, TabMetadata, Song, Tab
 from typing import Optional
 
-def create_song_with_tab(db: Session, title: str, filepath: str):
-    new_song = SongMetadata(title=title)
+def create_song_with_tab(db: Session, title: str, filepath: str, band_id: int) -> SongMetadata:
+    new_song = SongMetadata(title=title, band_id=band_id)
     db.add(new_song)
     db.commit()
-    db.refresh(new_song)
+    db.refresh(new_song) 
 
     new_tab = TabMetadata(filepath=filepath, song_id=new_song.id)
     db.add(new_tab)
     db.commit()
-    db.refresh(new_song)  
+    db.refresh(new_tab) 
 
-    return new_song  
+    return new_song
 
 def get_song_with_tab(db: Session, song_id: int) -> Optional[SongMetadata]:
     return db.query(SongMetadata).options(joinedload(SongMetadata.tab)).filter(SongMetadata.id == song_id).first()
