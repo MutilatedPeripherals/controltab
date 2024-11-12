@@ -2,7 +2,6 @@
   import { push } from "svelte-spa-router";
   import { useFetchSongs } from "../queries/getSongsQuery";
   import { useDeleteSong } from "../mutations/deleteSongMutation";
-  import toast from "svelte-french-toast";
   import type { Song } from "../types/Song";
   import AddSongForm from "../components/AddSongForm.svelte";
 
@@ -42,14 +41,10 @@
     if (selectedSongId !== null) {
       $deleteSongMutation.mutate(selectedSongId, {
         onSuccess: () => {
-          toast.success(`"${selectedSongTitle}" deleted successfully.`);
           $songsQuery.refetch();
           closeDeleteDialog();
         },
         onError: () => {
-          toast.error(
-            `Failed to delete "${selectedSongTitle}". Please try again.`
-          );
           closeDeleteDialog();
         },
       });
