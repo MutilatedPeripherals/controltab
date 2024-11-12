@@ -1,6 +1,5 @@
 <script lang="ts">
   import { useCreateSong } from "../mutations/createSongMutation";
-  import toast, { Toaster } from "svelte-french-toast";
 
   let newSongTitle = "";
   let selectedFile: File | null = null;
@@ -33,13 +32,9 @@
           newSongTitle = "";
           selectedFile = null;
           errorMessage = "";
-
-          toast.success("Song added successfully!");
         },
         onError: (error) => {
           console.error("Error adding song:", error);
-
-          toast.error("Failed to add song. Please try again.");
         },
       }
     );
