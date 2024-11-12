@@ -5,6 +5,8 @@ from dataclasses import dataclass, asdict
 from typing import List, Set
 import os
 
+DEBUG = False
+
 @dataclass
 class Note:
     step: str
@@ -19,8 +21,6 @@ class Note:
 class Beat:
     notes: List[Note]
     dynamic: str
-    rhythm: str
-
 
 @dataclass
 class Bar:
@@ -34,7 +34,6 @@ class MasterBar:
     key_mode: str
     time_sig: str
     bars: List[Bar]
-
 
 def materialize_gpif(tree, filepath):
     master_bars = []
@@ -93,7 +92,6 @@ def materialize_gpif(tree, filepath):
                     materialized_beat = Beat(
                         notes=materialized_notes,
                         dynamic=beat.find('Dynamic').text,
-                        rhythm=beat.find('Rhythm').get('ref')
                     )
                     materialized_beats.append(materialized_beat)
 
@@ -138,6 +136,12 @@ def find_changed_masterbars(old_master_bars: List[MasterBar], new_master_bars: L
         # Convert to dict for easier comparison
         # This handles nested dataclasses automatically
         if asdict(old_master) != asdict(new_master):
+            if DEBUG:
+                with open(f"tmp/old_{i}.json", "w") as file:
+                    json.dump(asdict(old_master), file, indent=4)
+                with open(f"tmp/new_{i}.json", "w") as file:
+                    json.dump(asdict(new_master), file, indent=4)
+
             changed_indexes.add(i)
 
     return changed_indexes
