@@ -26,7 +26,6 @@
     "@tanstack/svelte-query": "^5.59.20",
     "axios": "^1.7.7",
     "daisyui": "^4.12.14",
-    "svelte-french-toast": "^1.2.0",
     "svelte-spa-router": "^4.0.1"
   }
 }

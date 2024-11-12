@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { modifiedBars } from "../stores/modifiedBars";
-  import toast from "svelte-french-toast";
   import "@coderline/alphatab";
   import { useConfirmTabChange } from "../mutations/updateTabMutation";
   import { push } from "svelte-spa-router";
@@ -34,9 +33,6 @@
 
   function confirmChanges() {
     if (!uploadedTabUrl || !songId) {
-      toast.error(
-        "Cannot confirm changes. Ensure all data is loaded correctly."
-      );
       return;
     }
 
@@ -44,12 +40,8 @@
       { songId: songId, uploadedFileUrl: uploadedTabUrl },
       {
         onSuccess: () => {
-          toast.success("Tab changes confirmed!");
           modifiedBars.update((bars) => ({ ...bars, uploadedTabUrl: "" }));
           push(`/tabs/${songId}`); // Redirect to the song's tab page
-        },
-        onError: () => {
-          toast.error("Failed to confirm changes. Please try again.");
         },
       }
     );
