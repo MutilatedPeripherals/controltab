@@ -19,7 +19,6 @@ def test_materialize_gpif():
     assert len(master_bars[1].bars) == 1
     assert len(master_bars[1].bars[0].beats) == 4
 
-@pytest.mark.skip()
 def test_compare_gpif_simple():
     test_data_dir = os.path.join(__DIR__, 'test_data')
     score_a_path = os.path.join(test_data_dir, 'simple_old.gpif')
