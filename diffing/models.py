@@ -1,32 +1,76 @@
-from pydantic import BaseModel, HttpUrl
-from typing import List, Optional, Union
+from pydantic import BaseModel
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+from datetime import datetime
+from diffing.database import Base
+from typing import Optional
 
-class AssetInfo(BaseModel):
-    id: str
-    application_id: str
-    s3: bool
-    type: str
-    source: Optional[str]
-    filename: str
-    url: HttpUrl
-    thumb_url: Optional[HttpUrl] = None
-    size: int
-    field_key: str
-    checksum: str
+# SQLAlchemy Models
+class SongMetadata(Base):
+    __tablename__ = "song_metadata"
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, unique=True, index=True, nullable=False)
+    band_id = Column(Integer, ForeignKey("bands.id"), nullable=False)
+    tab = relationship("TabMetadata", uselist=False, back_populates="song", cascade="all, delete")
+    band = relationship("Band", back_populates="songs")
 
-class Record(BaseModel):
-    id: str
-    field_17: int
-    field_17_raw: int
-    field_16: str
-    field_16_raw: str
-    field_18: str
-    field_18_raw: AssetInfo
-    field_19: Optional[str] = None
-    field_19_raw: Union[AssetInfo, str, None] = None
+class TabMetadata(Base):
+    __tablename__ = "tab_metadata"
+    id = Column(Integer, primary_key=True, index=True)
+    filepath = Column(String, nullable=False)
+    song_id = Column(Integer, ForeignKey("song_metadata.id"), nullable=False)
+    uploaded_at = Column(DateTime, default=datetime.utcnow)
+    song = relationship("SongMetadata", back_populates="tab")
 
-class ResponseModel(BaseModel):
-    total_pages: int
-    current_page: int
-    total_records: int
-    records: List[Record]
+class Band(Base):
+    __tablename__ = "bands"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, nullable=False)
+    access_code = Column(String, unique=True, nullable=False)
+    songs = relationship("SongMetadata", back_populates="band")
+
+# Pydantic Schemas
+class SongBase(BaseModel):
+    title: str
+
+class SongCreate(SongBase):
+    pass
+
+class Song(SongBase):
+    id: int
+    tab: Optional["Tab"]
+
+    class Config:
+        orm_mode = True
+
+class Tab(BaseModel):
+    id: int
+    filepath: str
+    song_id: int
+    uploaded_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class BandBase(BaseModel):
+    name: str
+
+class BandCreate(BandBase):
+    pass 
+
+class BandSchema(BandBase): 
+    id: int
+    access_code: str 
+
+    class Config:
+        orm_mode = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    band_id: int | None = None
+
+class LoginRequest(BaseModel):
+    access_code: str
