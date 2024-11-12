@@ -13,6 +13,7 @@ class Note:
     fret: int
     string: int
     midi: int
+    palm_muted: bool
 
 @dataclass
 class Beat:
@@ -84,7 +85,8 @@ def materialize_gpif(tree, filepath):
                             octave=int(next(prop.find('.//Octave').text for prop in props if prop.get('name') == 'ConcertPitch')),
                             fret=int(next(prop.find('.//Fret').text for prop in props if prop.get('name') == 'Fret')),
                             string=int(next(prop.find('.//String').text for prop in props if prop.get('name') == 'String')),
-                            midi=int(next(prop.find('.//Number').text for prop in props if prop.get('name') == 'Midi'))
+                            midi=int(next(prop.find('.//Number').text for prop in props if prop.get('name') == 'Midi')),
+                            palm_muted=next(filter(lambda prop: prop.get('name') == 'PalmMuted', props), None) is not None
                         )
                         materialized_notes.append(materialized_note)
 
