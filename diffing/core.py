@@ -114,25 +114,26 @@ def materialize_gpif(tree, filepath):
     return master_bars
 
 
-def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]) -> Set[int]:
+def find_changed_masterbars(old_master_bars: List[MasterBar], new_master_bars: List[MasterBar]) -> Set[int]:
     changed_indexes = set()
 
-    max_length = max(len(old_gpif), len(new_gpif))
+    max_length = max(len(old_master_bars), len(new_master_bars))
 
-    os.makedirs("tmp", exist_ok=True)
-    with open("tmp/old.json", "w") as file:
-       json.dump([asdict(master_bar) for master_bar in old_gpif], file, indent=4)
-    with open("tmp/new.json", "w") as file:
-       json.dump([asdict(master_bar) for master_bar in new_gpif], file, indent=4)
+    if DEBUG:
+        os.makedirs("tmp", exist_ok=True)
+        with open("tmp/old_master_bars.json", "w") as file:
+           json.dump([asdict(master_bar) for master_bar in old_master_bars], file, indent=4)
+        with open("tmp/new_master_bars.json", "w") as file:
+           json.dump([asdict(master_bar) for master_bar in new_master_bars], file, indent=4)
 
     for i in range(max_length):
         # If one file has more master bars than the other, mark as changed
-        if i >= len(old_gpif) or i >= len(new_gpif):
+        if i >= len(old_master_bars) or i >= len(new_master_bars):
             changed_indexes.add(i)
             continue
 
-        old_master = old_gpif[i]
-        new_master = new_gpif[i]
+        old_master = old_master_bars[i]
+        new_master = new_master_bars[i]
 
         # Convert to dict for easier comparison
         # This handles nested dataclasses automatically
@@ -142,14 +143,14 @@ def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]
     return changed_indexes
 
 
-def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
-    old_tree = etree.parse(old_xml)
-    new_tree = etree.parse(new_xml)
+def compare_gpif_files(old_score_path: str, new_score_path: str) -> Set[int]:
+    old_tree = etree.parse(old_score_path)
+    new_tree = etree.parse(new_score_path)
 
-    old_gpif = materialize_gpif(old_tree, old_xml)
-    new_gpif = materialize_gpif(new_tree, new_xml)
+    old_master_bars = materialize_gpif(old_tree, old_score_path)
+    new_master_bars = materialize_gpif(new_tree, new_score_path)
 
-    return find_changed_masterbars(old_gpif, new_gpif)
+    return find_changed_masterbars(old_master_bars, new_master_bars)
 
 
 if __name__ == "__main__":
