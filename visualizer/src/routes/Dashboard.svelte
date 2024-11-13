@@ -1,129 +1,153 @@
 <script lang="ts">
   import { push } from "svelte-spa-router";
   import { useFetchSongs } from "../queries/getSongsQuery";
-  import { useDeleteSong } from "../mutations/deleteSongMutation";
-  import type { Song } from "../types/Song";
-  import AddSongForm from "../components/AddSongForm.svelte";
+  import { writable, derived } from "svelte/store";
 
-  let data: Song[] | undefined;
-  let isLoading = false;
-  let isError = false;
-  let error: Error | null = null;
-  let showDeleteDialog = false;
-  let selectedSongId: number | null = null;
-  let selectedSongTitle = "";
+  // Import Shadcn components
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import { Card, CardContent } from "$lib/components/ui/card";
+  import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
+
+  import {
+    Calendar,
+    FileText,
+    MoreHorizontal,
+    Music,
+    Search,
+    MessageSquare,
+  } from "lucide-svelte";
+  import type { Song } from "../types/Song";
+  import AddSongDialog from "../components/AddSongDialog.svelte";
+  import { formatDate } from "$lib/utils";
+  import DeleteSongDialog from "../components/DeleteSongDialog.svelte";
 
   const songsQuery = useFetchSongs();
-  $: ({ data, isLoading, isError, error } = $songsQuery);
+  const searchTerm = writable("");
 
-  const deleteSongMutation = useDeleteSong();
+  const filteredSongs = derived(
+    [songsQuery, searchTerm],
+    ([$songsQuery, $searchTerm]) =>
+      $songsQuery.data?.filter((song) =>
+        song.title.toLowerCase().includes($searchTerm.toLowerCase())
+      ) || []
+  );
 
-  function viewTab(id: number) {
-    push(`/tabs/${id}`);
+  let selectedSongId = writable<number | null>(null);
+  let selectedSongTitle = writable<string>("");
+
+  function confirmDelete(song: Song) {
+    selectedSongId.set(song.id);
+    selectedSongTitle.set(song.title);
+    deleteDialogOpen.set(true);
   }
 
-  function suggestChange(id: number) {
-    console.log("Suggesting a change for tab with id:", id);
-    push(`/tabs/${id}/compare`);
-  }
+  let deleteDialogOpen = writable(false);
 
-  function handleSongAdded() {
-    $songsQuery.refetch();
-  }
-
-  function confirmDeleteSong(id: number, title: string) {
-    selectedSongId = id;
-    selectedSongTitle = title;
-    showDeleteDialog = true;
-  }
-
-  function removeSong() {
-    if (selectedSongId !== null) {
-      $deleteSongMutation.mutate(selectedSongId, {
-        onSuccess: () => {
-          $songsQuery.refetch();
-          closeDeleteDialog();
-        },
-        onError: () => {
-          closeDeleteDialog();
-        },
-      });
+  function handleAction(action: string, song: Song) {
+    switch (action) {
+      case "open":
+        push(`/tabs/${song.id}`);
+        break;
+      case "export":
+        console.log(`Exporting ${song.title} as PDF`);
+        break;
+      case "suggest":
+        push(`/tabs/${song.id}/compare`);
+        break;
     }
-  }
-
-  function closeDeleteDialog() {
-    showDeleteDialog = false;
-    selectedSongId = null;
-    selectedSongTitle = "";
   }
 </script>
 
-<div class="container mx-auto p-6 bg-base-200 min-h-screen rounded-lg">
-  <h1 class="text-3xl font-semibold text-center mb-4 text-gray-800">
-    Your songs
-  </h1>
+<div class="container mx-auto p-4">
+  <h1 class="text-3xl font-bold mb-6 text-center">Dashboard</h1>
 
-  <AddSongForm on:songAdded={handleSongAdded} />
+  <!-- Search input -->
+  <div class="flex items-center mb-6">
+    <Search class="w-5 h-5 mr-2 text-gray-500" />
+    <Input
+      type="text"
+      placeholder="Search songs..."
+      bind:value={$searchTerm}
+      class="max-w-sm"
+    />
+    <AddSongDialog />
+  </div>
 
-  {#if isLoading}
+  <!-- Song Cards -->
+  {#if $songsQuery.isLoading}
     <p class="text-center text-gray-500">Loading songs...</p>
-  {:else if isError}
+  {:else if $songsQuery.isError}
     <p class="text-center text-red-500">
-      Failed to load songs: {error?.message}
+      Failed to load songs: {$songsQuery.error?.message}
     </p>
-  {:else if data}
-    <div class="grid gap-6">
-      {#each data as song (song.id)}
-        <div class="card bg-base-100 shadow-lg p-4 rounded-lg">
-          <div class="card-body">
-            <h2 class="card-title text-lg font-medium text-gray-800">
-              {song.title}
-            </h2>
-            <p class="text-sm text-gray-600">
-              Tab filepath: {song.tab.filepath}
-            </p>
-            <p class="text-sm text-gray-600">
-              Uploaded at: {new Date(song.tab.uploaded_at).toLocaleString()}
-            </p>
-            <div class="mt-4 flex justify-end space-x-4">
-              <button
-                class="btn btn-outline btn-primary btn-sm"
-                on:click={() => viewTab(song.tab.id)}
-              >
-                View Tab
-              </button>
-              <button
-                class="btn btn-outline btn-secondary btn-sm"
-                on:click={() => suggestChange(song.tab.id)}
-              >
-                Suggest a Change
-              </button>
-              <button
-                class="btn btn-outline btn-error btn-sm"
-                on:click={() => confirmDeleteSong(song.id, song.title)}
-              >
-                Remove Song
-              </button>
+  {:else}
+    <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {#each $filteredSongs as song (song.id)}
+        <Card class="overflow-hidden">
+          <CardContent class="p-0">
+            <div
+              class="flex items-center justify-between p-4 bg-primary text-primary-foreground"
+            >
+              <div class="flex items-center">
+                <Music class="w-5 h-5 mr-2" />
+                <h2 class="text-lg font-semibold">{song.title}</h2>
+              </div>
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild let:builder>
+                  <Button
+                    variant="ghost"
+                    builders={[builder]}
+                    class="h-8 w-8 p-0"
+                  >
+                    <span class="sr-only">Open menu</span>
+                    <MoreHorizontal class="h-4 w-4" />
+                  </Button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content align="end">
+                  <DropdownMenu.Label>Actions</DropdownMenu.Label>
+                  <DropdownMenu.Item
+                    on:click={() => handleAction("open", song)}
+                  >
+                    <FileText class="mr-2 h-4 w-4" />
+                    Open Tab
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    on:click={() => handleAction("suggest", song)}
+                  >
+                    <MessageSquare class="mr-2 h-4 w-4" />
+
+                    Suggest Changes
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    on:click={() => handleAction("export", song)}
+                  >
+                    Export as PDF
+                  </DropdownMenu.Item>
+
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item
+                    on:click={() => confirmDelete(song)}
+                    class="text-red-600"
+                  >
+                    Delete Song
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
             </div>
-          </div>
-        </div>
+            <div class="p-4 flex items-center text-muted-foreground">
+              <Calendar class="w-4 h-4 mr-2" />
+              <span>Last modified: {formatDate(song.tab.uploaded_at)}</span>
+            </div>
+          </CardContent>
+        </Card>
       {/each}
     </div>
   {/if}
-
-  <!-- Delete Confirmation Modal -->
-  {#if showDeleteDialog}
-    <div class="modal modal-open">
-      <div class="modal-box">
-        <h3 class="font-bold text-lg">Confirm Deletion</h3>
-        <p class="py-4">
-          Are you sure you want to delete "{selectedSongTitle}"?
-        </p>
-        <div class="modal-action">
-          <button class="btn btn-error" on:click={removeSong}>Delete</button>
-          <button class="btn" on:click={closeDeleteDialog}>Cancel</button>
-        </div>
-      </div>
-    </div>
-  {/if}
 </div>
+
+<DeleteSongDialog
+  bind:open={deleteDialogOpen}
+  songId={$selectedSongId}
+  songTitle={$selectedSongTitle}
+/>
