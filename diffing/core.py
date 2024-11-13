@@ -3,7 +3,9 @@ import json
 from lxml import etree
 from dataclasses import dataclass, asdict
 from typing import List, Set
+import os
 
+DEBUG = False
 
 @dataclass
 class Note:
@@ -13,13 +15,12 @@ class Note:
     fret: int
     string: int
     midi: int
+    palm_muted: bool
 
 @dataclass
 class Beat:
     notes: List[Note]
     dynamic: str
-    rhythm: str
-
 
 @dataclass
 class Bar:
@@ -34,8 +35,7 @@ class MasterBar:
     time_sig: str
     bars: List[Bar]
 
-
-def decompress_gpif(tree, filepath):
+def materialize_gpif(tree, filepath):
     master_bars = []
 
     # Build lookup tables
@@ -70,7 +70,7 @@ def decompress_gpif(tree, filepath):
                     if note_ids is not None:
                          note_ids = note_ids.text.split()
                     else:
-                        print(f"beat {beat_id} from voice {voice_id} from bar {bar_id} in file {filepath} has no notes!!!")
+                        #print(f"beat {beat_id} from voice {voice_id} from bar {bar_id} in file {filepath} has no notes!!!")
                         continue
 
                     # Materialize notes in the beat
@@ -84,14 +84,14 @@ def decompress_gpif(tree, filepath):
                             octave=int(next(prop.find('.//Octave').text for prop in props if prop.get('name') == 'ConcertPitch')),
                             fret=int(next(prop.find('.//Fret').text for prop in props if prop.get('name') == 'Fret')),
                             string=int(next(prop.find('.//String').text for prop in props if prop.get('name') == 'String')),
-                            midi=int(next(prop.find('.//Number').text for prop in props if prop.get('name') == 'Midi'))
+                            midi=int(next(prop.find('.//Number').text for prop in props if prop.get('name') == 'Midi')),
+                            palm_muted=next(filter(lambda prop: prop.get('name') == 'PalmMuted', props), None) is not None
                         )
                         materialized_notes.append(materialized_note)
 
                     materialized_beat = Beat(
                         notes=materialized_notes,
                         dynamic=beat.find('Dynamic').text,
-                        rhythm=beat.find('Rhythm').get('ref')
                     )
                     materialized_beats.append(materialized_beat)
 
@@ -109,50 +109,74 @@ def decompress_gpif(tree, filepath):
         )
         master_bars.append(master_bar_obj)
 
-    print(f"Amount of master bars: {len(master_bars)}")
     return master_bars
 
 
-def find_changed_masterbars(old_gpif: List[MasterBar], new_gpif: List[MasterBar]) -> Set[int]:
+def find_changed_masterbars(old_master_bars: List[MasterBar], new_master_bars: List[MasterBar]) -> Set[int]:
     changed_indexes = set()
 
-    # First ensure we handle different lengths
-    max_length = max(len(old_gpif), len(new_gpif))
-    #with open("data.json", "w") as file:
-    #    json.dump([asdict(master_bar) for master_bar in old_gpif], file, indent=4)
-    #with open("data2.json", "w") as file:
-    #    json.dump([asdict(master_bar) for master_bar in new_gpif], file, indent=4)
-            
+    max_length = max(len(old_master_bars), len(new_master_bars))
+
+    if DEBUG:
+        os.makedirs("tmp", exist_ok=True)
+        with open("tmp/old_master_bars.json", "w") as file:
+           json.dump([asdict(master_bar) for master_bar in old_master_bars], file, indent=4)
+        with open("tmp/new_master_bars.json", "w") as file:
+           json.dump([asdict(master_bar) for master_bar in new_master_bars], file, indent=4)
+
     for i in range(max_length):
         # If one file has more master bars than the other, mark as changed
-        if i >= len(old_gpif) or i >= len(new_gpif):
+        if i >= len(old_master_bars) or i >= len(new_master_bars):
             changed_indexes.add(i)
             continue
 
-        old_master = old_gpif[i]
-        new_master = new_gpif[i]
+        old_master = old_master_bars[i]
+        new_master = new_master_bars[i]
 
         # Convert to dict for easier comparison
         # This handles nested dataclasses automatically
         if asdict(old_master) != asdict(new_master):
+            if DEBUG:
+                with open(f"tmp/old_{i}.json", "w") as file:
+                    json.dump(asdict(old_master), file, indent=4)
+                with open(f"tmp/new_{i}.json", "w") as file:
+                    json.dump(asdict(new_master), file, indent=4)
+
             changed_indexes.add(i)
 
     return changed_indexes
 
 
-def compare_gpif_files(old_xml: str, new_xml: str) -> Set[int]:
-    print("HELLO HELLO HELLO HELLO HELLO HELLO")
-    old_tree = etree.parse(old_xml)
-    new_tree = etree.parse(new_xml)
+def compare_gpif_files(old_score_path: str, new_score_path: str) -> Set[int]:
+    old_tree = etree.parse(old_score_path)
+    new_tree = etree.parse(new_score_path)
 
-    old_gpif = decompress_gpif(old_tree, old_xml)
-    new_gpif = decompress_gpif(new_tree, new_xml)
+    old_master_bars = materialize_gpif(old_tree, old_score_path)
+    new_master_bars = materialize_gpif(new_tree, new_score_path)
 
-    return find_changed_masterbars(old_gpif, new_gpif)
+    return find_changed_masterbars(old_master_bars, new_master_bars)
 
 
 if __name__ == "__main__":
-    # x = compare_gpif_files('./simple/Empty/Content/score.gpif', './simple/Empty2/Content/score.gpif')
-    x = compare_gpif_files('./complex/scoreA.gpif', './complex/scoreB.gpif')
+    __DIR__ = os.path.dirname(os.path.abspath(__file__))
 
-    print(f"Indexes of MasterBars with changes: {x}")
+    test_data_dir = os.path.join(__DIR__, 'tests', 'test_data')
+    score_a_path = os.path.join(test_data_dir, 'simple_old.gpif')
+    score_b_path = os.path.join(test_data_dir, 'simple_new.gpif')
+    x = compare_gpif_files(score_a_path, score_b_path)
+
+    print(f"Indexes of MasterBars with changes between file {score_a_path} and {score_b_path}: {x}")
+
+    test_data_dir = os.path.join(__DIR__, 'tests', 'test_data')
+    score_a_path = os.path.join(test_data_dir, 'dissentgospel_old.gpif')
+    score_b_path = os.path.join(test_data_dir, 'dissentgospel_new.gpif')
+    x = compare_gpif_files(score_a_path, score_b_path)
+
+    print(f"Indexes of MasterBars with changes between file {score_a_path} and {score_b_path}: {x}")
+
+    test_data_dir = os.path.join(__DIR__, 'tests', 'test_data')
+    score_a_path = os.path.join(test_data_dir, 'jesusisalive_old.gpif')
+    score_b_path = os.path.join(test_data_dir, 'jesusisalive_new.gpif')
+    x = compare_gpif_files(score_a_path, score_b_path)
+
+    print(f"Indexes of MasterBars with changes between file {score_a_path} and {score_b_path}: {x}")
