@@ -22,30 +22,24 @@ export function useLogin() {
       const formData = new URLSearchParams();
       formData.append("access_code", accessCode);
 
-      // Send request to login endpoint
       const response = await fetch("http://127.0.0.1:8000/token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: formData.toString(),
       });
 
-      // Check for successful response
       if (!response.ok) {
         throw new Error("Invalid access code. Please try again.");
       }
 
-      // Parse and return the token from the response
       const data = await response.json();
       return data.access_token;
     },
     onSuccess: (data) => {
-      // Set the token in the global store
       token.set(data);
-      alert("Login successful!");
     },
     onError: (error) => {
       console.error("Login failed:", error);
-      alert(error.message);
     },
   });
 }

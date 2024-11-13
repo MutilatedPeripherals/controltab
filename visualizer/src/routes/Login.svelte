@@ -1,9 +1,26 @@
 <script>
-  import { onMount } from "svelte";
-  import { writable } from "svelte/store";
-  import { useLogin } from "../mutations/loginMutation";
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+  } from "$lib/components/ui/card";
+  import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+  } from "$lib/components/ui/alert";
+  import { AlertCircle, Music2 } from "lucide-svelte";
 
-  // State for access code and error messages
+  import { useLogin } from "../mutations/loginMutation";
+  import { login } from "../stores/auth";
+  import { push } from "svelte-spa-router";
+
   let accessCode = "";
   let errorMessage = "";
 
@@ -12,6 +29,10 @@
   function handleLogin() {
     errorMessage = "";
     $loginMutation.mutate(accessCode, {
+      onSuccess: (token) => {
+        login(token);
+        push("/dashboard");
+      },
       onError: (error) => {
         errorMessage = error.message;
       },
@@ -19,27 +40,40 @@
   }
 </script>
 
-<!-- Login form styled with DaisyUI and Tailwind -->
-<div class="flex items-center justify-center min-h-screen bg-gray-100">
-  <div class="p-8 bg-white shadow-lg rounded-lg w-96">
-    <h2 class="text-2xl font-bold text-center mb-4">Band Login</h2>
-    <form on:submit|preventDefault={handleLogin} class="space-y-4">
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text">Access Code</span>
-        </label>
-        <input
-          type="text"
-          placeholder="Enter your access code"
-          bind:value={accessCode}
-          class="input input-bordered w-full"
-          required
-        />
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+  <Card class="w-full max-w-md">
+    <CardHeader class="space-y-1">
+      <div class="flex items-center justify-center mb-4">
+        <Music2 class="h-12 w-12 text-primary" />
       </div>
-      {#if errorMessage}
-        <p class="text-red-500 text-sm">{errorMessage}</p>
-      {/if}
-      <button type="submit" class="btn btn-primary w-full">Login</button>
+      <CardTitle class="text-2xl font-bold text-center">Band Access</CardTitle>
+      <CardDescription class="text-center">
+        Enter your band's access code
+      </CardDescription>
+    </CardHeader>
+    <form on:submit|preventDefault={handleLogin}>
+      <CardContent class="space-y-4">
+        <div class="space-y-2">
+          <Label for="accessCode">Access Code</Label>
+          <Input
+            id="accessCode"
+            type="password"
+            placeholder="Enter your access code"
+            bind:value={accessCode}
+            required
+          />
+        </div>
+        {#if errorMessage}
+          <Alert variant="destructive">
+            <AlertCircle class="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        {/if}
+      </CardContent>
+      <CardFooter>
+        <Button type="submit" class="w-full">Access Dashboard</Button>
+      </CardFooter>
     </form>
-  </div>
+  </Card>
 </div>

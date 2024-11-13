@@ -4,6 +4,8 @@
   import "@coderline/alphatab";
   import { useFetchSongData } from "../queries/getSongQuery";
   import type { Song } from "../types/Song";
+  import { MessageSquare } from "lucide-svelte";
+  import { Button } from "$lib/components/ui/button";
 
   export let params: { id: number };
   const tabId = params.id;
@@ -75,9 +77,10 @@
     ></div>
 
     <div class="flex justify-center mt-6">
-      <button on:click={suggestChange} class="btn btn-primary">
+      <Button on:click={suggestChange} class="flex items-center gap-2">
+        <MessageSquare className="w-4 h-4" />
         Suggest a Change
-      </button>
+      </Button>
     </div>
   {/if}
 </div>

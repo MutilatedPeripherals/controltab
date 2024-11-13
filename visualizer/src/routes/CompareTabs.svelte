@@ -5,11 +5,16 @@
     useUploadTab,
     type CompareResponse,
   } from "../mutations/uploadTabMutation";
+  import { writable } from "svelte/store";
+  import { Button } from "$lib/components/ui/button";
+  import { Card, CardContent } from "$lib/components/ui/card";
+  import { Alert, AlertDescription } from "$lib/components/ui/alert";
+  import { FilePlus } from "lucide-svelte";
 
   export let params: { id: number };
 
   let selectedFile: File | null = null;
-  let isDragging: boolean = false;
+  let isDragging = writable(false);
   let errorMessage: string = "";
   let songId: number = params.id;
   let fileInput: HTMLInputElement;
@@ -58,22 +63,6 @@
       },
     });
   }
-
-  function handleDragOver(event: DragEvent): void {
-    event.preventDefault();
-    isDragging = true;
-  }
-
-  function handleDragLeave(): void {
-    isDragging = false;
-  }
-
-  function handleDrop(event: DragEvent): void {
-    event.preventDefault();
-    isDragging = false;
-    const file = event.dataTransfer ? event.dataTransfer.files[0] : null;
-    validateAndSetFile(file);
-  }
 </script>
 
 <div class="container mx-auto p-6 bg-base-200 min-h-screen rounded-lg">
@@ -81,56 +70,48 @@
     Upload a .gp File
   </h2>
 
-  <div
-    class="border-2 border-dashed border-gray-400 p-6 rounded-lg bg-white flex flex-col items-center justify-center space-y-4"
-    on:dragover={handleDragOver}
-    on:dragleave={handleDragLeave}
-    on:drop={handleDrop}
-    role="button"
-    tabindex="0"
-    class:isDragging
-  >
-    <p class="text-gray-500 text-center">
-      Drag and drop a .gp file here or click to select
-    </p>
+  <Card class="p-6 mb-6">
+    <CardContent class="flex flex-col items-center space-y-4">
+      <p class="text-gray-500 text-center">
+        Drag and drop a .gp file here or click to select
+      </p>
 
-    <input
-      type="file"
-      accept=".gp"
-      on:change={handleFileChange}
-      class="hidden"
-      bind:this={fileInput}
-    />
+      <input
+        type="file"
+        accept=".gp"
+        on:change={handleFileChange}
+        class="hidden"
+        bind:this={fileInput}
+      />
 
-    <button
-      class="btn btn-outline btn-primary"
-      on:click={() => fileInput.click()}
-    >
-      Choose File
-    </button>
+      <Button
+        variant="outline"
+        on:click={() => fileInput.click()}
+        class="flex items-center gap-2"
+      >
+        <FilePlus class="w-5 h-5" />
+        Choose File
+      </Button>
 
-    {#if selectedFile}
-      <p class="text-gray-700 mt-2">Selected file: {selectedFile.name}</p>
-    {/if}
+      {#if selectedFile}
+        <p class="text-gray-700 mt-2">Selected file: {selectedFile.name}</p>
+      {/if}
 
-    {#if errorMessage}
-      <p class="text-red-500 mt-2">{errorMessage}</p>
-    {/if}
-  </div>
+      {#if errorMessage}
+        <Alert variant="destructive">
+          <AlertDescription>{errorMessage}</AlertDescription>
+        </Alert>
+      {/if}
+    </CardContent>
+  </Card>
 
+  <!-- Upload Button -->
   <div class="flex justify-center mt-6">
-    <button
-      class="btn btn-primary"
+    <Button
       on:click={handleUpload}
       disabled={!selectedFile || $uploadMutation.isPending}
     >
       {#if $uploadMutation.isPending}Uploading...{:else}Upload File{/if}
-    </button>
+    </Button>
   </div>
 </div>
-
-<style>
-  .isDragging {
-    background-color: #f0faff;
-  }
-</style>
