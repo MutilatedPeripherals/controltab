@@ -67,7 +67,7 @@
   <DialogTrigger asChild>
     <Button
       on:click={() => showAddSongDialog.set(true)}
-      class="flex items-center gap-2"
+      class="flex items-center gap-2 ml-auto"
     >
       <Plus class="w-4 h-4" />
       Add Song

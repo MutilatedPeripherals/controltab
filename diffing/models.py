@@ -1,10 +1,10 @@
 from pydantic import BaseModel
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from diffing.database import Base
 from typing import Optional
-
+import enum
 # SQLAlchemy Models
 class SongMetadata(Base):
     __tablename__ = "song_metadata"
@@ -13,6 +13,7 @@ class SongMetadata(Base):
     band_id = Column(Integer, ForeignKey("bands.id"), nullable=False)
     tab = relationship("TabMetadata", uselist=False, back_populates="song", cascade="all, delete")
     band = relationship("Band", back_populates="songs")
+    setlist_items = relationship("SetlistItem", back_populates="song") 
 
 class TabMetadata(Base):
     __tablename__ = "tab_metadata"
@@ -74,3 +75,25 @@ class TokenData(BaseModel):
 
 class LoginRequest(BaseModel):
     access_code: str
+    
+class SetlistItemType(str, enum.Enum):
+    SONG = "song"
+    SAMPLE = "sample"
+    BREAK = "break"
+    SPEECH = "speech"
+
+class SetlistItem(Base):
+    __tablename__ = "setlist_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    type = Column(Enum(SetlistItemType), nullable=False)
+    title = Column(String, nullable=True)  # Nullable for songs
+    notes = Column(Text, nullable=True)
+    song_id = Column(Integer, ForeignKey("song_metadata.id"), nullable=True)
+
+    # Relationship to SongMetadata for song items
+    song = relationship("SongMetadata", back_populates="setlist_items")
+
+    def __repr__(self):
+        return f"<SetlistItem(id={self.id}, type={self.type}, title={self.title}, song_id={self.song_id}, notes={self.notes})>"
+
