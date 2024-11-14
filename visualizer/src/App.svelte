@@ -40,10 +40,10 @@
                   Visualizer
                 </a>
                 <a
-                  href="https://www.youtube.com/watch?v=26X2TBp3T_U"
+                  href="#/setlists"
                   class="px-3 py-2 rounded-md text-sm font-medium hover:bg-primary-foreground hover:text-primary transition-colors"
                 >
-                  Necrophagist - Extreme Unction [Live At Party.San 2005] 4K
+                  Setlists
                 </a>
               {/if}
 

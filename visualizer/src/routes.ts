@@ -10,6 +10,7 @@ import CompareTabs from "./routes/CompareTabs.svelte";
 import Login from "./routes/Login.svelte";
 import Visualizer from "./routes/Visualizer.svelte";
 import VisualizerLegacy from "./routes/VisualizerLegacy.svelte";
+import SetlistMode from "./routes/SetlistMode/SetlistMode.svelte";
 
 function authGuard() {
   return get(isAuthenticated);
@@ -36,6 +37,10 @@ const routes: RouteDefinition = {
   }),
   "/visualizer-legacy": wrap({
     component: VisualizerLegacy as typeof SvelteComponent,
+    conditions: [authGuard],
+  }),
+  "/setlists": wrap({
+    component: SetlistMode as typeof SvelteComponent,
     conditions: [authGuard],
   }),
 };
