@@ -5,6 +5,8 @@ from datetime import datetime
 from diffing.database import Base
 from typing import Optional
 import enum
+import uuid
+
 # SQLAlchemy Models
 class SongMetadata(Base):
     __tablename__ = "song_metadata"
@@ -85,7 +87,7 @@ class SetlistItemType(str, enum.Enum):
 class SetlistItem(Base):
     __tablename__ = "setlist_items"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))  # Change to String and use UUID
     type = Column(Enum(SetlistItemType), nullable=False)
     title = Column(String, nullable=True)  # Nullable for songs
     notes = Column(Text, nullable=True)
@@ -97,3 +99,21 @@ class SetlistItem(Base):
     def __repr__(self):
         return f"<SetlistItem(id={self.id}, type={self.type}, title={self.title}, song_id={self.song_id}, notes={self.notes})>"
 
+class SetlistItemBase(BaseModel):
+    type: SetlistItemType
+    title: Optional[str] = None  # Nullable for songs
+    notes: Optional[str] = None
+    song_id: Optional[int] = None
+
+class SetlistItemCreate(SetlistItemBase):
+    pass
+
+class SetlistItemSchema(BaseModel):
+    id: Optional[str] = None
+    type: SetlistItemType
+    title: Optional[str] = None
+    notes: Optional[str] = None
+    song_id: Optional[int] = None
+
+    class Config:
+        from_attributes = True
