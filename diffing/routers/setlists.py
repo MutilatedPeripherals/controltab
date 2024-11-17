@@ -36,30 +36,37 @@ async def create_setlist_item(setlist_item: SetlistItemCreate, db: Session = Dep
 
 @router.put("/setlist", response_model=List[SetlistItemSchema])
 def update_setlist(
-    new_setlist: List[SetlistItemSchema],  # Expect Pydantic models in the request body
+    new_setlist: List[SetlistItemSchema], 
     db: Session = Depends(get_db)
 ):
-    # Process new_setlist
+    # Validate new setlist items
     for item in new_setlist:
         if item.type == "song" and not item.song_id:
             raise HTTPException(status_code=400, detail="Missing songId for song type")
         if item.type != "song" and not item.title:
             raise HTTPException(status_code=400, detail="Missing title for non-song type")
 
-    # Remove stale items
+    # Get existing items from DB
+    existing_items = db.query(SetlistItem).all()
+    existing_ids = {item.id for item in existing_items if item.id}
     new_ids = {item.id for item in new_setlist if item.id}
-    db.query(SetlistItem).filter(~SetlistItem.id.in_(new_ids)).delete()
+
+    # Remove stale items
+    stale_ids = existing_ids - new_ids
+    if stale_ids:
+        db.query(SetlistItem).filter(SetlistItem.id.in_(stale_ids)).delete()
 
     # Update or create items
     for item_data in new_setlist:
-        if item_data.id:  # Update existing
+        if item_data.id and item_data.id in existing_ids:
+            # Update existing item
             db_item = db.query(SetlistItem).filter(SetlistItem.id == item_data.id).first()
-            if db_item:
-                for key, value in item_data.dict(exclude_unset=True).items():
-                    setattr(db_item, key, value)
-        else:  # Create new
-            db_item = SetlistItem(**item_data.dict())
-            db.add(db_item)
+            for key, value in item_data.dict(exclude_unset=True).items():
+                setattr(db_item, key, value)
+        else:
+            # Create new item
+            new_db_item = SetlistItem(**item_data.dict())
+            db.add(new_db_item)
 
     db.commit()
 

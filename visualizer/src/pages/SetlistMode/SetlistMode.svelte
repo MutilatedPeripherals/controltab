@@ -8,6 +8,7 @@
   import { useFetchSetlistItems } from "../../queries/getSetlistItemsQuery";
   import { useUpdateSetlist } from "../../mutations/updateSetlistMutation";
   import { dragHandleZone, type DndEvent } from "svelte-dnd-action";
+  import { flip } from "svelte/animate";
 
   const setlist = writable<SetlistItem[]>([]);
 
@@ -25,13 +26,13 @@
       ...items,
       type === "song"
         ? {
-            tempId: crypto.randomUUID(),
+            id: crypto.randomUUID(),
             type: "song",
             songId: null,
             notes: "",
           }
         : {
-            tempId: crypto.randomUUID(),
+            id: crypto.randomUUID(),
             type,
             title: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
             notes: "",
@@ -48,7 +49,7 @@
 
     setlist.update((items) =>
       items.map((item) => {
-        if (item.id === id || item.tempId === id) {
+        if (item.id === id) {
           if (item.type === "song") {
             return {
               ...item,
@@ -77,13 +78,12 @@
       })
     );
   };
+  const flipDurationMs = 300;
 
   const removeItem = (id: string | undefined) => {
     console.log("hello", id);
     if (!id) return;
-    setlist.update((items) =>
-      items.filter((item) => item.id !== id && item.tempId !== id)
-    );
+    setlist.update((items) => items.filter((item) => item.id !== id));
   };
 
   const handleSave = () => {
@@ -92,7 +92,6 @@
   };
 
   function handleSort(e: CustomEvent<DndEvent<SetlistItem>>): void {
-    console.log(e.detail.items);
     setlist.set(e.detail.items);
   }
 </script>
@@ -137,13 +136,13 @@
       </div>
     {/if}
     <div
-      use:dragHandleZone={{ items: $setlist }}
+      use:dragHandleZone={{ items: $setlist, flipDurationMs }}
       on:consider={handleSort}
       on:finalize={handleSort}
       class="space-y-2"
     >
-      {#each $setlist as setlistItem}
-        <div>
+      {#each $setlist as setlistItem (setlistItem.id)}
+        <div animate:flip={{ duration: flipDurationMs }}>
           {#if setlistItem.type === "song"}
             <SongItem
               {setlistItem}

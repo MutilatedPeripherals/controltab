@@ -19,7 +19,7 @@
   ) => void;
   export let onRemove: (identifier: string | undefined) => void;
 
-  const identifier = setlistItem.id || setlistItem.tempId;
+  const identifier = setlistItem.id;
   console.log(identifier);
   function getIconForType(type: SetlistItem["type"]) {
     switch (type) {

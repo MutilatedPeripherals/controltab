@@ -7,14 +7,17 @@ interface UpdateSetlistVariables {
   setlist: SetlistItem[];
 }
 
-// Function to map client-side attributes to server-side attributes
 function mapSetlistForServer(setlist: SetlistItem[]) {
   return setlist.map((item) => {
-    const { tempId, songId, ...rest } = item;
-    return {
-      ...rest,
-      song_id: songId,
-    };
+    if (item.type === "song") {
+      const { songId, ...rest } = item;
+      return {
+        ...rest,
+        song_id: songId,
+      };
+    }
+
+    return item;
   });
 }
 
@@ -24,7 +27,7 @@ export function useUpdateSetlist() {
   return createMutation<UpdateSetlistResponse, Error, UpdateSetlistVariables>({
     mutationFn: async ({ setlist }) => {
       const mappedSetlist = mapSetlistForServer(setlist);
-
+      console.log(mappedSetlist);
       const response = await axiosInstance.put(
         "/setlist_items/setlist",
         mappedSetlist,

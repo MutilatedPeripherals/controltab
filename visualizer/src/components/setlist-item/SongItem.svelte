@@ -12,6 +12,7 @@
   import type { SetlistItem } from "../../types/SetlistItem";
   import type { Selected } from "bits-ui";
   import { Button } from "$lib/components/ui/button";
+  import { dragHandle } from "svelte-dnd-action";
 
   export let setlistItem: SetlistItem;
   export let onUpdate: (
@@ -23,7 +24,7 @@
   const songsQuery = useFetchSongs();
 
   function handleSongChange(selected: Selected<unknown> | undefined) {
-    const identifier = setlistItem.id || setlistItem.tempId;
+    const identifier = setlistItem.id;
     if (identifier) {
       onUpdate(identifier, { songId: selected?.value as number | null });
     }
@@ -42,13 +43,13 @@
       ? { value: setlistItem.songId, label: getSongName(setlistItem.songId) }
       : undefined;
 
-  const identifier = setlistItem.id || setlistItem.tempId;
+  const identifier = setlistItem.id;
 </script>
 
 <Card class="bg-card">
   <CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
     <CardTitle class="text-sm font-medium flex items-center">
-      <div class="cursor-move p-2 items-center flex">
+      <div class="cursor-move p-2 items-center flex" use:dragHandle>
         <GripVertical class="h-4 w-4" />
         <Music class="h-4 w-4 ml-2" />
       </div>
