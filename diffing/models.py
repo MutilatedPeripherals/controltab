@@ -84,26 +84,29 @@ class SetlistItemType(str, enum.Enum):
     BREAK = "break"
     SPEECH = "speech"
 
+
 class SetlistItem(Base):
     __tablename__ = "setlist_items"
 
-    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))  # Change to String and use UUID
-    type = Column(Enum(SetlistItemType), nullable=False)
-    title = Column(String, nullable=True)  # Nullable for songs
-    notes = Column(Text, nullable=True)
-    song_id = Column(Integer, ForeignKey("song_metadata.id"), nullable=True)
+    id: str = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
+    type: SetlistItemType = Column(Enum(SetlistItemType), nullable=False)
+    title: Optional[str] = Column(String, nullable=True)
+    notes: Optional[str] = Column(Text, nullable=True)
+    song_id: Optional[int] = Column(Integer, ForeignKey("song_metadata.id"), nullable=True)
+    order: int = Column(Integer, nullable=False)
 
-    # Relationship to SongMetadata for song items
     song = relationship("SongMetadata", back_populates="setlist_items")
 
     def __repr__(self):
-        return f"<SetlistItem(id={self.id}, type={self.type}, title={self.title}, song_id={self.song_id}, notes={self.notes})>"
+        return f"<SetlistItem(id={self.id}, type={self.type}, title={self.title}, song_id={self.song_id}, notes={self.notes}, order={self.order})>"
 
 class SetlistItemBase(BaseModel):
     type: SetlistItemType
-    title: Optional[str] = None  # Nullable for songs
+    title: Optional[str] = None
     notes: Optional[str] = None
     song_id: Optional[int] = None
+    order: int  
+
 
 class SetlistItemCreate(SetlistItemBase):
     pass
@@ -114,6 +117,7 @@ class SetlistItemSchema(BaseModel):
     title: Optional[str] = None
     notes: Optional[str] = None
     song_id: Optional[int] = None
+    order: int 
 
     class Config:
-        from_attributes = True
+        from_attributes = True 

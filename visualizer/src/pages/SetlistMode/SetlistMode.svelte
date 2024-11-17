@@ -9,6 +9,7 @@
   import { useUpdateSetlist } from "../../mutations/updateSetlistMutation";
   import { dragHandleZone, type DndEvent } from "svelte-dnd-action";
   import { flip } from "svelte/animate";
+  import { toast } from "svelte-sonner";
 
   const setlist = writable<SetlistItem[]>([]);
 
@@ -20,7 +21,6 @@
     setlist.set($setlistItemsQuery.data ?? []);
   }
 
-  // Add a new item with a temporary ID
   const addItem = (type: SetlistItem["type"]) => {
     setlist.update((items) => [
       ...items,
@@ -30,12 +30,14 @@
             type: "song",
             songId: null,
             notes: "",
+            order: items.length,
           }
         : {
             id: crypto.randomUUID(),
             type,
             title: `New ${type.charAt(0).toUpperCase() + type.slice(1)}`,
             notes: "",
+            order: items.length,
           },
     ]);
   };
@@ -81,18 +83,44 @@
   const flipDurationMs = 300;
 
   const removeItem = (id: string | undefined) => {
-    console.log("hello", id);
+    console.log("Removing item with id:", id);
     if (!id) return;
-    setlist.update((items) => items.filter((item) => item.id !== id));
-  };
 
+    setlist.update((items) => {
+      return items
+        .filter((item) => item.id !== id)
+        .map((item, index) => ({
+          ...item,
+          order: index,
+        }));
+    });
+  };
   const handleSave = () => {
     const currentSetlist = get(setlist);
-    $updateSetlistResult.mutate({ setlist: currentSetlist });
+    console.log("Saving setlist:", currentSetlist);
+    $updateSetlistResult.mutate(
+      { setlist: currentSetlist },
+      {
+        onSuccess: () => {
+          toast.success("Setlist saved successfully!", {
+            description: "Your setlist changes have been saved.",
+          });
+        },
+        onError: () => {
+          toast.error("Failed to save setlist.", {
+            description: "Please try again later.",
+          });
+        },
+      }
+    );
   };
 
   function handleSort(e: CustomEvent<DndEvent<SetlistItem>>): void {
-    setlist.set(e.detail.items);
+    const reorderedItems = e.detail.items.map((item, index) => ({
+      ...item,
+      order: index,
+    }));
+    setlist.set(reorderedItems);
   }
 </script>
 

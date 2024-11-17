@@ -8,6 +8,7 @@ interface UpdateSetlistVariables {
 }
 
 function mapSetlistForServer(setlist: SetlistItem[]) {
+  console.log("enter", setlist);
   return setlist.map((item) => {
     if (item.type === "song") {
       const { songId, ...rest } = item;

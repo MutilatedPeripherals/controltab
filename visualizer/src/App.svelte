@@ -4,6 +4,7 @@
   import { QueryClient, QueryClientProvider } from "@tanstack/svelte-query";
   import LeftSidebar from "./components/layout/LeftSidebar.svelte";
   import Topbar from "./components/layout/Topbar.svelte";
+  import { Toaster } from "$lib/components/ui/sonner";
 
   const queryClient = new QueryClient();
 </script>
@@ -28,6 +29,8 @@
     </main>
   </div>
 </div>
+
+<Toaster />
 
 <style global>
   @import "tailwindcss/tailwind.css";
