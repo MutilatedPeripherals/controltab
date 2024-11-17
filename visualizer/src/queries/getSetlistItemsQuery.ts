@@ -16,6 +16,7 @@ export function useFetchSetlistItems() {
             type: "song",
             songId: item.song_id,
             notes: item.notes,
+            order: item.order,
           };
         } else {
           return {
@@ -23,6 +24,7 @@ export function useFetchSetlistItems() {
             type: item.type,
             title: item.title,
             notes: item.notes,
+            order: item.order,
           };
         }
       });
