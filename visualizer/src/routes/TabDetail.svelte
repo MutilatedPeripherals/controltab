@@ -41,9 +41,6 @@
       display: {
         layoutMode: 0,
       },
-      player: {
-        enablePlayer: true,
-      },
     };
 
     tabPlayer = new window.alphaTab.AlphaTabApi(container, settings);
@@ -90,16 +87,12 @@
   }
 </script>
 
-<div class="container mx-auto p-6 bg-base-200 min-h-screen rounded-lg">
+<div class="container mx-auto p-6 bg-base-200 rounded-lg">
   {#if $songDataQuery.isLoading}
     <p class="text-center text-gray-500">Loading tab data...</p>
   {:else if $songDataQuery.isError}
     <p class="text-center text-red-500">Failed to load tab data.</p>
   {:else if $songDataQuery.isSuccess}
-    <h2 class="text-3xl font-semibold text-center mb-4 text-gray-800">
-      {$songDataQuery.data.title}
-    </h2>
-
     <div class="flex flex-wrap justify-center items-center mb-4 space-x-4">
       {#each tracks as track, index}
         <div class="flex items-center space-x-2">
@@ -120,7 +113,7 @@
 
     <div
       bind:this={container}
-      class="w-full h-[500px] bg-white border border-gray-300 rounded-lg shadow-md overflow-y-auto overflow-x-hidden"
+      class="flex-1 w-full bg-white border border-gray-300 rounded-lg shadow-md overflow-y-auto h-[42rem] overflow-x-hidden"
     ></div>
 
     <div class="flex justify-center mt-6 space-x-4">
