@@ -6,35 +6,30 @@
     DialogHeader,
     DialogTitle,
     DialogFooter,
-    DialogTrigger,
   } from "$lib/components/ui/dialog";
-  import { useDeleteSong } from "../mutations/deleteSongMutation"; // Adjust the path as needed
-  import { writable } from "svelte/store";
+  import { useDeleteSong } from "../mutations/deleteSongMutation";
 
-  // Props to receive from the parent component
-  export let songId: number | null = null;
-  export let songTitle: string = "";
-  export let open = writable(false);
+  let { songId = null, songTitle = "", open = $bindable(false) } = $props();
 
   const deleteSongMutation = useDeleteSong();
 
   function handleDelete() {
     if (songId !== null) {
       $deleteSongMutation.mutate(songId);
-      open.set(false);
+      open = false;
     }
   }
 </script>
 
-<Dialog bind:open={$open}>
+<Dialog bind:open>
   <DialogContent>
     <DialogHeader>
       <DialogTitle>Confirm Deletion</DialogTitle>
     </DialogHeader>
     <p>Are you sure you want to delete "{songTitle}"?</p>
     <DialogFooter class="mt-4 flex justify-end">
-      <Button variant="destructive" on:click={handleDelete}>Delete</Button>
-      <Button on:click={() => open.set(false)}>Cancel</Button>
+      <Button variant="destructive" onclick={handleDelete}>Delete</Button>
+      <Button onclick={() => (open = false)}>Cancel</Button>
     </DialogFooter>
   </DialogContent>
 </Dialog>

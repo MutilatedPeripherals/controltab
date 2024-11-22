@@ -44,7 +44,7 @@
       {
         onSuccess: () => {
           modifiedBars.update((bars) => ({ ...bars, uploadedTabUrl: "" }));
-          push(`/tabs/${songId}`);
+          push(`/songs/${songId}`);
         },
       }
     );

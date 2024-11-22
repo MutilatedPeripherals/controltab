@@ -9,14 +9,14 @@
   import { Checkbox } from "$lib/components/ui/checkbox";
 
   export let params: { id: number };
-  const tabId = params.id;
+  const songId = params.id;
 
-  const songDataQuery = useFetchSongData(tabId);
+  const songDataQuery = useFetchSongData(songId);
   let container: HTMLDivElement;
-  let tabPlayer: any;
-  let currentScore: any;
+  let tabPlayer: AlphaTabApi;
+  let currentScore: Score;
   let trackStates: boolean[] = [];
-  let tracks: any[] = [];
+  let tracks: Track[] = [];
 
   $: if ($songDataQuery.isSuccess) {
     tick().then(() => {
@@ -33,7 +33,7 @@
 
     container.innerHTML = "";
 
-    const settings = {
+    const settings: AlphaTabSettings = {
       file: data.tab.filepath,
       core: {
         engine: "svg",
@@ -50,31 +50,21 @@
       console.log("Total Tracks:", score.tracks.length);
 
       currentScore = score;
-
       tracks = score.tracks;
       trackStates = new Array(score.tracks.length).fill(true);
 
       tabPlayer.renderTracks(score.tracks);
     });
-
-    tabPlayer.postRenderFinished.on(() => {
-      console.log(
-        `AlphaTab player for ${data.tab.filepath} rendered successfully.`
-      );
-    });
   }
 
   function toggleTrack(index: number) {
     trackStates[index] = !trackStates[index];
-
     const visibleTracks = tracks.filter((_, i) => trackStates[i]);
-
     tabPlayer.renderTracks(visibleTracks);
   }
 
   function suggestChange() {
-    console.log("Suggest a change clicked");
-    push(`/tabs/${tabId}/compare`);
+    push(`/songs/${songId}/compare`);
   }
 
   function printTab() {

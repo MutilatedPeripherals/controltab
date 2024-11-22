@@ -1,6 +1,4 @@
-// src/queries/useFetchSongs.ts
 import { createQuery } from "@tanstack/svelte-query";
-import type { Tab } from "../types/Tab";
 import axiosInstance from "../axiosInstance";
 import type { Song } from "../types/Song";
 

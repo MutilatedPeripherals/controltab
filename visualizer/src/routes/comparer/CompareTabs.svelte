@@ -1,32 +1,24 @@
 <script lang="ts">
   import { push } from "svelte-spa-router";
-  import { modifiedBars } from "../stores/modifiedBars";
+  import { modifiedBars } from "../../stores/modifiedBars";
   import {
     useUploadTab,
     type CompareResponse,
-  } from "../mutations/uploadTabMutation";
-  import { writable } from "svelte/store";
+  } from "../../mutations/uploadTabMutation";
   import { Button } from "$lib/components/ui/button";
   import { Card, CardContent } from "$lib/components/ui/card";
   import { Alert, AlertDescription } from "$lib/components/ui/alert";
   import { FilePlus } from "lucide-svelte";
+  console.log("gang gang ggnagn");
 
-  export let params: { id: number };
+  let { params } = $props<{ params: { id: number } }>();
 
-  let selectedFile: File | null = null;
-  let isDragging = writable(false);
-  let errorMessage: string = "";
-  let songId: number = params.id;
+  let songId = params.id;
+  let selectedFile = $state<File | null>(null);
+  let errorMessage = $state("");
   let fileInput: HTMLInputElement;
 
   const uploadMutation = useUploadTab(songId);
-
-  function handleFileChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    const file = target.files ? target.files[0] : null;
-    validateAndSetFile(file);
-  }
-
   function validateAndSetFile(file: File | null): void {
     if (file && file.name.endsWith(".gp")) {
       selectedFile = file;
@@ -35,6 +27,12 @@
       selectedFile = null;
       errorMessage = "Please upload a valid .gp file.";
     }
+  }
+
+  function handleFileChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    const file = target.files ? target.files[0] : null;
+    validateAndSetFile(file);
   }
 
   function handleUpload() {
@@ -79,7 +77,7 @@
       <input
         type="file"
         accept=".gp"
-        on:change={handleFileChange}
+        onchange={handleFileChange}
         class="hidden"
         bind:this={fileInput}
       />

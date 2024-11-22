@@ -1,57 +1,53 @@
-import { isAuthenticated } from "./stores/auth";
-import { get } from "svelte/store";
-import type { RouteDefinition } from "svelte-spa-router";
+import { wrap } from "svelte-spa-router/wrap";
 import type { SvelteComponent } from "svelte";
+
 import Home from "./routes/Home.svelte";
+import Login from "./routes/login/Login.svelte";
+import Songs from "./routes/songs/Songs.svelte";
 import TabDetail from "./routes/TabDetail.svelte";
-import CompareTabs from "./routes/CompareTabs.svelte";
-import Login from "./routes/Login.svelte";
+import CompareTabs from "./routes/comparer/CompareTabs.svelte";
 import Visualizer from "./routes/Visualizer.svelte";
 import VisualizerLegacy from "./routes/VisualizerLegacy.svelte";
-import SetlistMode from "./pages/SetlistMode/SetlistMode.svelte";
-import Songs from "./pages/Songs.svelte";
-import { wrap } from "svelte-spa-router/wrap";
+import SetlistMode from "./routes/setlist-editor/SetlistMode.svelte";
 
-function authGuard() {
-  return get(isAuthenticated);
+import { isAuthenticated } from "./stores/auth";
+
+function authGuard(): Promise<boolean> {
+  return new Promise((resolve) => {
+    isAuthenticated.subscribe((value) => {
+      resolve(value);
+    })();
+  });
 }
 
-export const ROUTES = {
-  HOME: "/",
-  LOGIN: "/login",
-  SONGS: "/songs",
-  SONG_DETAIL: "/songs/:id",
-  SONG_COMPARE: "/songs/:id/compare",
-  VISUALIZER: "/visualizer",
-  VISUALIZER_LEGACY: "/visualizer-legacy",
-  SETLISTS: "/setlists",
-};
-
-const routes: RouteDefinition = {
-  [ROUTES.HOME]: Home as typeof SvelteComponent,
-  [ROUTES.LOGIN]: Login as typeof SvelteComponent,
-  [ROUTES.SONGS]: wrap({
-    component: Songs as typeof SvelteComponent,
+type SvelteComponentType = new (...args: any[]) => SvelteComponent;
+// man the backwards compatibility between svelte-spa-router and svelte 5 is ASS
+// unkown casting for everyone to enjoy
+const routes: Record<string, SvelteComponentType | ReturnType<typeof wrap>> = {
+  "/": Home as unknown as SvelteComponentType,
+  "/login": Login as unknown as SvelteComponentType,
+  "/songs": wrap({
+    component: Songs as unknown as SvelteComponentType,
     conditions: [authGuard],
   }),
-  [`${ROUTES.SONGS}/:id`]: wrap({
-    component: TabDetail as typeof SvelteComponent,
+  "/songs/:id": wrap({
+    component: TabDetail as unknown as SvelteComponentType,
     conditions: [authGuard],
   }),
-  [`${ROUTES.SONGS}/:id/compare`]: wrap({
-    component: CompareTabs as typeof SvelteComponent,
+  "/songs/:id/compare": wrap({
+    component: CompareTabs as unknown as SvelteComponentType,
     conditions: [authGuard],
   }),
-  [ROUTES.VISUALIZER]: wrap({
-    component: Visualizer as typeof SvelteComponent,
+  "/visualizer": wrap({
+    component: Visualizer as unknown as SvelteComponentType,
     conditions: [authGuard],
   }),
-  [ROUTES.VISUALIZER_LEGACY]: wrap({
-    component: VisualizerLegacy as typeof SvelteComponent,
+  "/visualizer-legacy": wrap({
+    component: VisualizerLegacy as unknown as SvelteComponentType,
     conditions: [authGuard],
   }),
-  [ROUTES.SETLISTS]: wrap({
-    component: SetlistMode as typeof SvelteComponent,
+  "/setlists": wrap({
+    component: SetlistMode as unknown as SvelteComponentType,
     conditions: [authGuard],
   }),
 };

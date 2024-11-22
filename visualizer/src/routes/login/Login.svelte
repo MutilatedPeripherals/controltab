@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { Button } from "$lib/components/ui/button";
   import { Input } from "$lib/components/ui/input";
   import { Label } from "$lib/components/ui/label";
@@ -17,24 +17,24 @@
   } from "$lib/components/ui/alert";
   import { AlertCircle, Music2 } from "lucide-svelte";
 
-  import { useLogin } from "../mutations/loginMutation";
-  import { login } from "../stores/auth";
+  import { useLogin } from "../../mutations/loginMutation";
+  import { login } from "../../stores/auth";
   import { push } from "svelte-spa-router";
 
-  let accessCode = "";
-  let errorMessage = "";
+  let accessCode = $state("");
 
   const loginMutation = useLogin();
 
-  function handleLogin() {
-    errorMessage = "";
+  const errorMessageDerived = $derived(
+    () => $loginMutation.error?.message || ""
+  );
+
+  function handleLogin(event: Event) {
+    event.preventDefault();
     $loginMutation.mutate(accessCode, {
-      onSuccess: (token) => {
+      onSuccess: (token: string) => {
         login(token);
         push("/songs");
-      },
-      onError: (error) => {
-        errorMessage = error.message;
       },
     });
   }
@@ -51,7 +51,7 @@
         Enter your band's access code
       </CardDescription>
     </CardHeader>
-    <form on:submit|preventDefault={handleLogin}>
+    <form onsubmit={handleLogin}>
       <CardContent class="space-y-4">
         <div class="space-y-2">
           <Label for="accessCode">Access Code</Label>
@@ -63,11 +63,11 @@
             required
           />
         </div>
-        {#if errorMessage}
+        {#if errorMessageDerived()}
           <Alert variant="destructive">
             <AlertCircle class="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{errorMessage}</AlertDescription>
+            <AlertDescription>{errorMessageDerived()}</AlertDescription>
           </Alert>
         {/if}
       </CardContent>

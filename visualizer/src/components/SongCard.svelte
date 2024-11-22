@@ -11,7 +11,6 @@
   } from "lucide-svelte";
   import { formatDate } from "$lib/utils";
   import type { Song } from "../types/Song";
-  import * as Select from "$lib/components/ui/select";
 
   export let song: Song;
   export let handleAction: (action: string, song: Song) => void;
