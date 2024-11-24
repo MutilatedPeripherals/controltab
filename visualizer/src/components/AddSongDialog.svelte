@@ -106,7 +106,7 @@
           <Input
             id="song-file"
             type="file"
-            accept=".gp,.gpx"
+            accept=".gp"
             on:change={handleFileInput}
             class="hidden"
           />
@@ -114,7 +114,7 @@
             {#if newSongFile}
               {newSongFile.name}
             {:else}
-              Drag & drop or click to upload .gp or .gpx file
+              Drag & drop or click to upload .gp file
             {/if}
           </Label>
         </div>

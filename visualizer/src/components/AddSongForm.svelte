@@ -10,18 +10,18 @@
   function handleFileChange(event: Event) {
     const target = event.target as HTMLInputElement;
     const file = target.files ? target.files[0] : null;
-    if (file && (file.name.endsWith(".gp") || file.name.endsWith(".gpx"))) {
+    if (file && file.name.endsWith(".gp")) {
       selectedFile = file;
       errorMessage = "";
     } else {
       selectedFile = null;
-      errorMessage = "Please upload a valid .gp or .gpx file.";
+      errorMessage = "Please upload a valid .gp file.";
     }
   }
 
   function addSong() {
     if (!newSongTitle || !selectedFile) {
-      errorMessage = "Please provide a title and select a valid .gp or .gpx file.";
+      errorMessage = "Please provide a title and select a valid .gp file.";
       return;
     }
 
@@ -50,7 +50,7 @@
   />
   <input
     type="file"
-    accept=".gp,.gpx"
+    accept=".gp"
     on:change={handleFileChange}
     class="file-input file-input-bordered w-full max-w-xs mb-2"
   />
