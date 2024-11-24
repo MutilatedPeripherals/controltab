@@ -1,9 +1,11 @@
 from pydantic import BaseModel
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from diffing.database import Base
 from typing import Optional
+import enum
+import uuid
 
 # SQLAlchemy Models
 class SongMetadata(Base):
@@ -13,6 +15,7 @@ class SongMetadata(Base):
     band_id = Column(Integer, ForeignKey("bands.id"), nullable=False)
     tab = relationship("TabMetadata", uselist=False, back_populates="song", cascade="all, delete")
     band = relationship("Band", back_populates="songs")
+    setlist_items = relationship("SetlistItem", back_populates="song") 
 
 class TabMetadata(Base):
     __tablename__ = "tab_metadata"
@@ -74,3 +77,47 @@ class TokenData(BaseModel):
 
 class LoginRequest(BaseModel):
     access_code: str
+    
+class SetlistItemType(str, enum.Enum):
+    SONG = "song"
+    SAMPLE = "sample"
+    BREAK = "break"
+    SPEECH = "speech"
+
+
+class SetlistItem(Base):
+    __tablename__ = "setlist_items"
+
+    id: str = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
+    type: SetlistItemType = Column(Enum(SetlistItemType), nullable=False)
+    title: Optional[str] = Column(String, nullable=True)
+    notes: Optional[str] = Column(Text, nullable=True)
+    song_id: Optional[int] = Column(Integer, ForeignKey("song_metadata.id"), nullable=True)
+    order: int = Column(Integer, nullable=False)
+
+    song = relationship("SongMetadata", back_populates="setlist_items")
+
+    def __repr__(self):
+        return f"<SetlistItem(id={self.id}, type={self.type}, title={self.title}, song_id={self.song_id}, notes={self.notes}, order={self.order})>"
+
+class SetlistItemBase(BaseModel):
+    type: SetlistItemType
+    title: Optional[str] = None
+    notes: Optional[str] = None
+    song_id: Optional[int] = None
+    order: int  
+
+
+class SetlistItemCreate(SetlistItemBase):
+    pass
+
+class SetlistItemSchema(BaseModel):
+    id: Optional[str] = None
+    type: SetlistItemType
+    title: Optional[str] = None
+    notes: Optional[str] = None
+    song_id: Optional[int] = None
+    order: int 
+
+    class Config:
+        from_attributes = True 

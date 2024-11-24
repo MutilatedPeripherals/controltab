@@ -31,7 +31,7 @@
     $loginMutation.mutate(accessCode, {
       onSuccess: (token) => {
         login(token);
-        push("/dashboard");
+        push("/songs");
       },
       onError: (error) => {
         errorMessage = error.message;

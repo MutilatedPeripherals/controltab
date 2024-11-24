@@ -7,6 +7,11 @@ from diffing.utils import generate_access_code
 
 router = APIRouter(prefix="/bands", tags=["bands"])
 
+
+@router.get("/me", response_model=dict)
+def get_band_name(db: Session = Depends(get_db), current_band: Band = Depends(get_current_band)):
+    return {"name": current_band.name}
+
 @router.get("/{band_id}", response_model=BandSchema)
 async def get_band(band_id: int, db: Session = Depends(get_db), band: Band = Depends(get_current_band)):
     band_data = db.query(Band).filter(Band.id == band_id).first()
