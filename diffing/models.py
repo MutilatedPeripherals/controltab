@@ -44,7 +44,7 @@ class Song(SongBase):
     tab: Optional["Tab"]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Tab(BaseModel):
     id: int
@@ -53,7 +53,7 @@ class Tab(BaseModel):
     uploaded_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class BandBase(BaseModel):
     name: str
@@ -66,7 +66,7 @@ class BandSchema(BandBase):
     access_code: str 
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class Token(BaseModel):
     access_token: str

@@ -33,8 +33,8 @@ async def create_song(
     db: Session = Depends(get_db), 
     current_band: Band = Depends(get_current_band)
 ):
-    if not tab_file.filename.endswith(".gp"):
-        raise HTTPException(status_code=400, detail="Only .gp files are allowed")
+    if not (tab_file.filename.endswith(".gp") or tab_file.filename.endswith(".gpx")):
+        raise HTTPException(status_code=400, detail="Only .gp or .gpx files are allowed")
     unique_filename = save_uploaded_file(tab_file, Path("files")).name
     return create_song_with_tab(db, title=title, filepath=unique_filename, band_id=current_band.id)
 
