@@ -39,7 +39,9 @@
         push(`/songs/${song.id}`);
         break;
       case "export":
-        console.log(`Exporting ${song.title} as PDF`);
+        if (import.meta.env.VITE_DEBUG) {
+          console.log(`Exporting ${song.title} as PDF`);
+        }
         break;
       case "suggest":
         push(`/songs/${song.id}/compare`);

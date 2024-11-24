@@ -96,11 +96,13 @@
             ].beats[beatIndex];
 
           if (areBeatsDifferent(leftTabBeat, rightTabBeat)) {
-            console.log(
-              "The beats have different notes (string or fret mismatch).",
-              leftTabBeat.id,
-              rightTabBeat.id
-            );
+            if (import.meta.env.VITE_DEBUG) {
+              console.log(
+                "The beats have different notes (string or fret mismatch).",
+                leftTabBeat.id,
+                rightTabBeat.id
+              );
+            }
             redBeats.push(leftTabBeat.id);
             greenBeats.push(rightTabBeat.id);
           }

@@ -25,7 +25,9 @@
   }
 
   function renderAlphaTabPlayer(data: Song) {
-    console.log("Rendering AlphaTab player for:", data);
+    if (import.meta.env.VITE_DEBUG) {
+      console.log("Rendering AlphaTab player for:", data);
+    }
     if (!window.alphaTab) {
       console.error("AlphaTab not loaded");
       return;
@@ -46,8 +48,10 @@
     tabPlayer = new window.alphaTab.AlphaTabApi(container, settings);
 
     tabPlayer.scoreLoaded.on((score) => {
-      console.log("Full Score Loaded:", score);
-      console.log("Total Tracks:", score.tracks.length);
+      if (import.meta.env.VITE_DEBUG) {
+        console.log("Full Score Loaded:", score);
+        console.log("Total Tracks:", score.tracks.length);
+      }
 
       currentScore = score;
 
@@ -57,11 +61,13 @@
       tabPlayer.renderTracks(score.tracks);
     });
 
-    tabPlayer.postRenderFinished.on(() => {
-      console.log(
-        `AlphaTab player for ${data.tab.filepath} rendered successfully.`
-      );
-    });
+    if (import.meta.env.VITE_DEBUG) {
+      tabPlayer.postRenderFinished.on(() => {
+        console.log(
+          `AlphaTab player for ${data.tab.filepath} rendered successfully.`
+        );
+      });
+    }
   }
 
   function toggleTrack(index: number) {
@@ -73,7 +79,9 @@
   }
 
   function suggestChange() {
-    console.log("Suggest a change clicked");
+    if (import.meta.env.VITE_DEBUG) {
+      console.log("Suggest a change clicked");
+    }
     push(`/tabs/${tabId}/compare`);
   }
 
@@ -83,7 +91,9 @@
       return;
     }
     tabPlayer.print(undefined, { display: { barsPerRow: 4 } });
-    console.log("Printing the tab...");
+    if (import.meta.env.VITE_DEBUG) {
+      console.log("Printing the tab...");
+    }
   }
 </script>
 

@@ -88,7 +88,9 @@
   const flipDurationMs = 300;
 
   const removeItem = (id: string | undefined) => {
-    console.log("Removing item with id:", id);
+    if (import.meta.env.VITE_DEBUG) {
+      console.log("Removing item with id:", id);
+    }
     if (!id) return;
 
     setlist.update((items) => {
