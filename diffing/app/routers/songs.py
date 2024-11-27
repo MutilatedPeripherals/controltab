@@ -11,9 +11,6 @@ from app.auth.authentication import get_current_band
 from pathlib import Path 
 from urllib.parse import urlparse
 
-os.makedirs('files', exist_ok=True)
-
-
 router = APIRouter(prefix="/songs", tags=["songs"])
 
 @router.get("/", response_model=List[Song])
