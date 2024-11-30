@@ -4,17 +4,17 @@ from sqlalchemy.orm import sessionmaker
 from app.config import SQLALCHEMY_DATABASE_URL
 import os
 
-# Determine connection arguments based on database type
-if "sqlite" in SQLALCHEMY_DATABASE_URL:  # SQLite-specific settings
-    connect_args = {"check_same_thread": False}
-else:
-    connect_args = {}  # No special args needed for PostgreSQL
+# Determine connection arguments based on the database type
+connect_args = {"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else None
 
 # SQLAlchemy engine configuration
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL,
-    connect_args=connect_args if connect_args else None  # Only pass if non-empty
-)
+if connect_args:
+    engine = create_engine(
+        SQLALCHEMY_DATABASE_URL,
+        connect_args=connect_args  # Pass this only if not None
+    )
+else:
+    engine = create_engine(SQLALCHEMY_DATABASE_URL)  # Omit connect_args entirely for PostgreSQL
 
 # Session maker for database sessions
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
