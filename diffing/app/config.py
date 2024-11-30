@@ -1,14 +1,20 @@
 import os
 from pathlib import Path
 
-# Directory for uploaded files (for static or other purposes)
-UPLOAD_DIR = Path("../files")
+# Determine the base directory
+BASE_DIR = Path(__file__).resolve().parent
 
-# Check the environment and set the database path
+# Directory for uploaded files (for static or other purposes)
+UPLOAD_DIR = BASE_DIR / "files"
+
+# Ensure the `UPLOAD_DIR` exists
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+# Set the database path depending on the environment
 if os.getenv("RAILWAY_ENVIRONMENT"):
-    DATABASE_FILE = "/data/files.db"  # Ensure this is the correct path
+    DATABASE_FILE = "/data/files.db"  # Ensure the volume is mounted to /data in Railway
 else:
-    DATABASE_FILE = "./files.db"
+    DATABASE_FILE = UPLOAD_DIR / "files.db"
 
 # Set the SQLAlchemy database URL
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{DATABASE_FILE}"
