@@ -1,22 +1,25 @@
 import os
 from pathlib import Path
 
-# Determine the base directory
+# Determine the base directory of the project
 BASE_DIR = Path(__file__).resolve().parent
 
-# Directory for uploaded files (for static or other purposes)
+# Directory for storing files (e.g., uploads or local database)
 UPLOAD_DIR = BASE_DIR / "files"
 
-# Ensure the `UPLOAD_DIR` exists (for local development)
+# Ensure the `UPLOAD_DIR` exists in local development
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-# Set the database path depending on the environment
-if os.getenv("RAILWAY_ENVIRONMENT"):
-    # In production, use the volume-mounted /data/database.db
+# Set the database file path based on the environment
+if os.getenv("RAILWAY_ENVIRONMENT"):  # Railway-specific environment variable
+    # In production, use the volume-mounted path (persistent storage)
     DATABASE_FILE = "/data/database.db"
 else:
-    # In local development, use ./files/database.db
+    # In local development, store the SQLite database locally
     DATABASE_FILE = UPLOAD_DIR / "database.db"
 
-# Set the SQLAlchemy database URL
+# Construct the SQLAlchemy database URL
 SQLALCHEMY_DATABASE_URL = f"sqlite:///{DATABASE_FILE}"
+
+# Debugging: Print the resolved database path (optional)
+print(f"Database path resolved to: {DATABASE_FILE}")
