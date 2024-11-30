@@ -23,8 +23,10 @@ app.add_middleware(
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=UPLOAD_DIR), name="static")
 
-# Initialize Database
-initialize_database()
+# Startup Event to Initialize Database
+@app.on_event("startup")
+async def on_startup():
+    initialize_database()
 
 # Include Routers
 app.include_router(songs.router)
