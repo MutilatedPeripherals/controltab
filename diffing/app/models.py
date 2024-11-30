@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from diffing.database import Base
+from app.database import Base
 from typing import Optional
 import enum
 import uuid

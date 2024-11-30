@@ -4,8 +4,8 @@ from fastapi.security import APIKeyHeader
 from sqlalchemy.orm import Session
 import jwt
 from jwt import decode, PyJWTError
-from diffing.models import Band, Token, TokenData
-from diffing.database import get_db
+from app.models import Band, Token, TokenData
+from app.database import get_db
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer
 

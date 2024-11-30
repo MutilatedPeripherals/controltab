@@ -5,7 +5,7 @@
   import { Search } from "lucide-svelte";
   import type { Song } from "../../types/Song";
   import AddSongDialog from "../../components/AddSongDialog.svelte";
-  import SongCard from "../../components/SongCard.svelte";
+  import SongCard from "./SongCard.svelte";
   import DeleteSongDialog from "../../components/DeleteSongDialog.svelte";
   import { useFetchSongs } from "../../queries/getSongsQuery";
 
