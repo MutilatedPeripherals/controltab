@@ -13,7 +13,7 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 # Set the database file path based on the environment
 if os.getenv("RAILWAY_ENVIRONMENT"):  # Railway-specific environment variable
     # In production, use the volume-mounted path (persistent storage)
-    DATABASE_FILE = "/data/database.db"
+    DATABASE_FILE = "../data/database.db"
 else:
     # In local development, store the SQLite database locally
     DATABASE_FILE = UPLOAD_DIR / "database.db"
