@@ -18,11 +18,12 @@ Base = declarative_base()
 
 def initialize_database():
     """Initialize the database and create tables."""
-    # Ensure the directory for the database exists
-    db_dir = os.path.dirname(SQLALCHEMY_DATABASE_URL.replace("sqlite:///", ""))
-    if not os.path.exists(db_dir):
-        os.makedirs(db_dir, exist_ok=True)
-    print(f"Database initialized at: {SQLALCHEMY_DATABASE_URL}")
+    db_path = SQLALCHEMY_DATABASE_URL.replace("sqlite:///", "")
+    print(f"Initializing database at: {db_path}")
+    if not os.path.exists(db_path):
+        print("Database file does not exist. Creating new database.")
+    else:
+        print("Database file already exists.")
     Base.metadata.create_all(bind=engine)
 
 def get_db():
