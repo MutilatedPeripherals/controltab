@@ -9,7 +9,7 @@ UPLOAD_DIR = BASE_DIR / "files"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists locally
 
 # Set database URL based on the environment
-if os.getenv("RAILWAY_ENVIRONMENT"):  # Detect if running in Railway
+if os.getenv("RAILWAY_ENVIRONMENT_NAME") == "production":  # Check if running in production
     # Use PostgreSQL DATABASE_URL for production
     DATABASE_URL = os.getenv("DATABASE_URL")
     if not DATABASE_URL:
