@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
+from fastapi import Request
 
 from app.auth import authentication
 from app.config import FILE_STORAGE_PATH  # Import FILE_STORAGE_PATH
@@ -73,3 +74,10 @@ app.include_router(setlists.router)
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse(url="/docs")
+
+@app.middleware("http")
+async def enforce_https(request: Request, call_next):
+    # Use `X-Forwarded-Proto` to determine the original scheme
+    if request.headers.get("x-forwarded-proto") == "https":
+        request.url = request.url.replace(scheme="https")
+    return await call_next(request)
