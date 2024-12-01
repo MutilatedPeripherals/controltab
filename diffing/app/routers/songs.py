@@ -43,7 +43,8 @@ async def create_song(
 ):
     if not tab_file.filename.endswith(".gp"):
         raise HTTPException(status_code=400, detail="Only .gp files are allowed")
-
+    print("hola que tal")
+    print(FILE_STORAGE_PATH)
     unique_filename = save_uploaded_file(tab_file, FILE_STORAGE_PATH).name
     return create_song_with_tab(db, title=title, filepath=unique_filename, band_id=current_band.id)
 
