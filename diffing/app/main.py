@@ -81,9 +81,9 @@ async def root():
 # Enforce HTTPS for the Static Files
 @app.middleware("http")
 async def enforce_https_static(request, call_next):
-    if request.url.scheme == "http":
-        # Redirect HTTP to HTTPS for static files
-        if request.url.path.startswith("/static"):
-            url = request.url.replace(scheme="https")
-            return RedirectResponse(url=str(url))
+    # Only redirect if the scheme is HTTP and the path starts with `/static`
+    if request.url.scheme == "http" and request.url.path.startswith("/static"):
+        # Redirect to the same URL with HTTPS
+        https_url = request.url.replace(scheme="https")
+        return RedirectResponse(url=str(https_url))
     return await call_next(request)
