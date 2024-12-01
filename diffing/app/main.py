@@ -1,13 +1,11 @@
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-
 from fastapi.responses import RedirectResponse
 
 from app.auth import authentication
-from app.config import UPLOAD_DIR
+from app.config import FILE_STORAGE_PATH  # Import FILE_STORAGE_PATH
 from app.database import initialize_database
 from app.routers import bands, songs, comparison, setlists
 
@@ -29,13 +27,8 @@ app.add_middleware(
 )
 
 # Directory for storing uploaded files
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-app.mount("/static", StaticFiles(directory=UPLOAD_DIR), name="static")
-
-# # Startup Event to Initialize Database
-# @app.on_event("startup")
-# async def on_startup():
-#     initialize_database()
+FILE_STORAGE_PATH.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
+app.mount("/static", StaticFiles(directory=FILE_STORAGE_PATH), name="static")
 
 # Include Routers
 app.include_router(songs.router)
