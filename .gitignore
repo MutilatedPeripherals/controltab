@@ -3,4 +3,4 @@ diffing/venv
 .env
 venv
 .vscode
-files.db
+*.db
