@@ -34,7 +34,7 @@
     container.innerHTML = "";
 
     const settings: AlphaTabSettings = {
-      file: "https://backend-production-0646.up.railway.app/static/9ebfa90a-d80a-4171-b23e-398849ab883b.gp",
+      file: data.tab.filepath,
       core: {
         engine: "svg",
       },

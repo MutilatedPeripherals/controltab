@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 from fastapi import Request
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from app.auth import authentication
 from app.config import FILE_STORAGE_PATH  # Import FILE_STORAGE_PATH
@@ -63,6 +64,11 @@ app.openapi = lambda: custom_openapi(app)
 
 FILE_STORAGE_PATH.mkdir(parents=True, exist_ok=True)  
 app.mount("/static", StaticFiles(directory=FILE_STORAGE_PATH), name="static")
+
+app.add_middleware(
+    TrustedHostMiddleware,
+    allowed_hosts=["*"],  # Replace '*' with specific domains in production
+)
 
 app.include_router(songs.router)
 app.include_router(comparison.router)
