@@ -1,14 +1,23 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from pathlib import Path
 
-from diffing.auth import authentication
-from diffing.config import UPLOAD_DIR
-from diffing.database import initialize_database
-from diffing.routers import bands, songs, comparison, setlists
+from fastapi.responses import RedirectResponse
 
-app = FastAPI()
+from app.auth import authentication
+from app.config import UPLOAD_DIR
+from app.database import initialize_database
+from app.routers import bands, songs, comparison, setlists
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    initialize_database()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 # CORS Middleware Configuration
 app.add_middleware(
@@ -23,8 +32,10 @@ app.add_middleware(
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=UPLOAD_DIR), name="static")
 
-# Initialize Database
-initialize_database()
+# # Startup Event to Initialize Database
+# @app.on_event("startup")
+# async def on_startup():
+#     initialize_database()
 
 # Include Routers
 app.include_router(songs.router)
@@ -32,3 +43,8 @@ app.include_router(comparison.router)
 app.include_router(bands.router)
 app.include_router(authentication.router)
 app.include_router(setlists.router)
+
+
+@app.get("/", include_in_schema=False)
+async def root():
+    return RedirectResponse(url="/docs")

@@ -3,7 +3,7 @@ import os
 import pytest
 from lxml import etree
 
-from diffing.core import compare_gpif_files, materialize_gpif
+from app.core import compare_gpif_files, materialize_gpif
 
 __DIR__ = os.path.dirname(os.path.abspath(__file__))
 

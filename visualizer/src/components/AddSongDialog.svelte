@@ -12,18 +12,14 @@
   } from "$lib/components/ui/dialog";
   import { Plus } from "lucide-svelte";
   import { useCreateSong } from "../mutations/createSongMutation"; // Adjust path as needed
-  import { writable } from "svelte/store";
 
-  // Mutation for creating a new song
   const createSongMutation = useCreateSong();
 
-  // State variables
-  let newSongName = writable("");
-  let newSongFile: File | null = null;
-  let isDragging = false;
-  let showAddSongDialog = writable(false);
+  let newSongName = $state("");
+  let newSongFile: File | null = $state(null);
+  let isDragging = $state(false);
+  let showAddSongDialog = $state(false);
 
-  // File upload handling
   function handleDragOver(event: DragEvent) {
     event.preventDefault();
     isDragging = true;
@@ -49,24 +45,23 @@
   }
 
   function handleAddSong() {
-    if ($newSongName && newSongFile) {
+    if (newSongName && newSongFile) {
       $createSongMutation.mutate({
-        title: $newSongName,
+        title: newSongName,
         tabFile: newSongFile,
       });
 
-      // Clear inputs after submitting
-      newSongName.set("");
+      newSongName = "";
       newSongFile = null;
-      showAddSongDialog.set(false);
+      showAddSongDialog = false;
     }
   }
 </script>
 
-<Dialog bind:open={$showAddSongDialog}>
+<Dialog bind:open={showAddSongDialog}>
   <DialogTrigger asChild>
     <Button
-      on:click={() => showAddSongDialog.set(true)}
+      onclick={() => (showAddSongDialog = true)}
       class="flex items-center gap-2 ml-auto"
     >
       <Plus class="w-4 h-4" />
@@ -85,29 +80,30 @@
         <Label for="song-name" class="text-right">Song Name</Label>
         <Input
           id="song-name"
-          bind:value={$newSongName}
+          bind:value={newSongName}
           class="col-span-3"
           placeholder="Enter song name"
         />
       </div>
 
-      <!-- File Upload with Drag-and-Drop -->
       <div class="grid grid-cols-4 items-center gap-4">
         <Label for="song-file" class="text-right">GP File</Label>
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div
+          role="button"
+          tabindex="0"
           class="col-span-3 border-2 border-dashed rounded-md p-4 text-center"
           class:border-primary={isDragging}
           class:border-gray-300={!isDragging}
-          on:dragover={handleDragOver}
-          on:dragleave={handleDragLeave}
-          on:drop={handleDrop}
+          ondragover={handleDragOver}
+          ondragleave={handleDragLeave}
+          ondrop={handleDrop}
+          aria-label="Drop GP file here"
         >
           <Input
             id="song-file"
             type="file"
             accept=".gp"
-            on:change={handleFileInput}
+            onchange={handleFileInput}
             class="hidden"
           />
           <Label for="song-file" class="cursor-pointer">
@@ -122,7 +118,7 @@
     </div>
 
     <DialogFooter>
-      <Button on:click={handleAddSong} disabled={!$newSongName || !newSongFile}>
+      <Button onclick={handleAddSong} disabled={!newSongName || !newSongFile}>
         Add Song
       </Button>
     </DialogFooter>

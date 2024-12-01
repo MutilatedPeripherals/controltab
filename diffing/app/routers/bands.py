@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from diffing.auth.authentication import get_current_band
-from diffing.models import Band, BandCreate, BandSchema  # Import necessary schemas
+from app.auth.authentication import get_current_band
+from app.models import Band, BandCreate, BandSchema  # Import necessary schemas
 from sqlalchemy.orm import Session
-from diffing.database import get_db
-from diffing.utils import generate_access_code
+from app.database import get_db
+from app.utils import generate_access_code
 
 router = APIRouter(prefix="/bands", tags=["bands"])
 

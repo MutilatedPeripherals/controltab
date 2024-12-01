@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 
-from diffing.models import SetlistItem, SetlistItemCreate, SetlistItemSchema, SetlistItemType
-from diffing.database import get_db
+from app.models import SetlistItem, SetlistItemCreate, SetlistItemSchema, SetlistItemType
+from app.database import get_db
 
 router = APIRouter(prefix="/setlist_items", tags=["setlist_items"])
 

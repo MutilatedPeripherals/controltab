@@ -4,8 +4,8 @@ from fastapi.security import APIKeyHeader
 from sqlalchemy.orm import Session
 import jwt
 from jwt import decode, PyJWTError
-from diffing.models import Band, Token, TokenData
-from diffing.database import get_db
+from app.models import Band, Token, TokenData
+from app.database import get_db
 from typing import Optional
 from fastapi.security import OAuth2PasswordBearer
 
@@ -17,7 +17,7 @@ api_key_scheme = APIKeyHeader(name="Authorization")
 # JWT Configuration
 SECRET_KEY = "YTqyjx8ja5KiCl2vjgg9XCIujYAAAnjx"  # Replace with a secure, unique key in production
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 300
 
 # Helper function to create a JWT access token
 def create_access_token(data: dict, expires_delta: timedelta = None):
@@ -65,8 +65,6 @@ async def get_current_band(token: str = Depends(oauth2_scheme), db: Session = De
 
     # Query the database to retrieve the current band
     band = db.query(Band).filter(Band.id == band_id).first()
-    print("alskjdflkjasdflkjasdflkjasdñlfkjalsdkfjaldkjsfadfkl")
-    print(band)
     if band is None:
         raise credentials_exception
 

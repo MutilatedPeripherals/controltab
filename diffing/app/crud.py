@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session, joinedload
-from diffing.models import SongMetadata, TabMetadata, Song, Tab
+from app.models import SongMetadata, TabMetadata, Song, Tab
 from typing import Optional
 
 def create_song_with_tab(db: Session, title: str, filepath: str, band_id: int) -> SongMetadata:

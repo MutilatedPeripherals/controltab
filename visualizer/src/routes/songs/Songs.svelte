@@ -1,37 +1,33 @@
 <script lang="ts">
   import { push } from "svelte-spa-router";
-  import { useFetchSongs } from "../queries/getSongsQuery";
-  import { writable, derived } from "svelte/store";
-
   import { Input } from "$lib/components/ui/input";
 
   import { Search } from "lucide-svelte";
-  import type { Song } from "../types/Song";
-  import AddSongDialog from "../components/AddSongDialog.svelte";
-  import DeleteSongDialog from "../components/DeleteSongDialog.svelte";
-  import SongCard from "../components/SongCard.svelte";
+  import type { Song } from "../../types/Song";
+  import AddSongDialog from "../../components/AddSongDialog.svelte";
+  import SongCard from "./SongCard.svelte";
+  import DeleteSongDialog from "../../components/DeleteSongDialog.svelte";
+  import { useFetchSongs } from "../../queries/getSongsQuery";
 
   const songsQuery = useFetchSongs();
-  const searchTerm = writable("");
 
-  const filteredSongs = derived(
-    [songsQuery, searchTerm],
-    ([$songsQuery, $searchTerm]) =>
+  let searchTerm = $state("");
+  let selectedSongId = $state<number | null>(null);
+  let selectedSongTitle = $state("");
+  let deleteDialogOpen = $state(false);
+
+  const filteredSongs = $derived(
+    () =>
       $songsQuery.data?.filter((song) =>
-        song.title.toLowerCase().includes($searchTerm.toLowerCase())
+        song.title.toLowerCase().includes(searchTerm.toLowerCase())
       ) || []
   );
 
-  let selectedSongId = writable<number | null>(null);
-  let selectedSongTitle = writable<string>("");
-
   function confirmDelete(song: Song) {
-    selectedSongId.set(song.id);
-    selectedSongTitle.set(song.title);
-    deleteDialogOpen.set(true);
+    selectedSongId = song.id;
+    selectedSongTitle = song.title;
+    deleteDialogOpen = true;
   }
-
-  let deleteDialogOpen = writable(false);
 
   function handleAction(action: string, song: Song) {
     switch (action) {
@@ -56,7 +52,7 @@
     <Input
       type="text"
       placeholder="Search songs..."
-      bind:value={$searchTerm}
+      bind:value={searchTerm}
       class="max-w-sm"
     />
 
@@ -71,7 +67,7 @@
     </p>
   {:else}
     <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {#each $filteredSongs as song (song.id)}
+      {#each filteredSongs() as song (song.id)}
         <SongCard {song} {handleAction} {confirmDelete} />
       {/each}
     </div>
@@ -80,6 +76,6 @@
 
 <DeleteSongDialog
   bind:open={deleteDialogOpen}
-  songId={$selectedSongId}
-  songTitle={$selectedSongTitle}
+  songId={selectedSongId}
+  songTitle={selectedSongTitle}
 />

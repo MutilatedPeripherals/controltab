@@ -2,10 +2,10 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, Request
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
-from diffing.core import compare_gpif_files
-from diffing.database import get_db
-from diffing.crud import get_tab_file_path
-from diffing.utils import save_uploaded_file, extract_gpif
+from app.core import compare_gpif_files
+from app.database import get_db
+from app.crud import get_tab_file_path
+from app.utils import save_uploaded_file, extract_gpif
 from pathlib import Path
 
 router = APIRouter(prefix="/compare", tags=["comparison"])

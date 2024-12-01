@@ -118,10 +118,10 @@ def find_changed_masterbars(old_master_bars: List[MasterBar], new_master_bars: L
     max_length = max(len(old_master_bars), len(new_master_bars))
 
     if DEBUG:
-        os.makedirs("tmp", exist_ok=True)
-        with open("tmp/old_master_bars.json", "w") as file:
+        os.makedirs("../tmp", exist_ok=True)
+        with open("../tmp/old_master_bars.json", "w") as file:
            json.dump([asdict(master_bar) for master_bar in old_master_bars], file, indent=4)
-        with open("tmp/new_master_bars.json", "w") as file:
+        with open("../tmp/new_master_bars.json", "w") as file:
            json.dump([asdict(master_bar) for master_bar in new_master_bars], file, indent=4)
 
     for i in range(max_length):
@@ -137,9 +137,9 @@ def find_changed_masterbars(old_master_bars: List[MasterBar], new_master_bars: L
         # This handles nested dataclasses automatically
         if asdict(old_master) != asdict(new_master):
             if DEBUG:
-                with open(f"tmp/old_{i}.json", "w") as file:
+                with open(f"../tmp/old_{i}.json", "w") as file:
                     json.dump(asdict(old_master), file, indent=4)
-                with open(f"tmp/new_{i}.json", "w") as file:
+                with open(f"../tmp/new_{i}.json", "w") as file:
                     json.dump(asdict(new_master), file, indent=4)
 
             changed_indexes.add(i)

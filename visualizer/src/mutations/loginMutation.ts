@@ -1,3 +1,4 @@
+import axios from "axios";
 import { createMutation } from "@tanstack/svelte-query";
 import { writable } from "svelte/store";
 
@@ -5,35 +6,36 @@ import { writable } from "svelte/store";
 const storedToken = localStorage.getItem("token");
 export const token = writable<string | null>(storedToken);
 
-// Subscribe to token changes to save to localStorage
 token.subscribe((value) => {
   if (value) {
-    localStorage.setItem("token", value); // Save token to localStorage
+    localStorage.setItem("token", value);
   } else {
-    localStorage.removeItem("token"); // Remove token if null
+    localStorage.removeItem("token");
   }
 });
 
-// Define the login mutation function
 export function useLogin() {
   return createMutation<string, Error, string>({
     mutationFn: async (accessCode: string) => {
-      // Prepare the form data with the access code
-      const formData = new URLSearchParams();
-      formData.append("access_code", accessCode);
+      try {
+        const formData = new URLSearchParams();
+        formData.append("access_code", accessCode);
 
-      const response = await fetch("http://127.0.0.1:8000/token", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: formData.toString(),
-      });
+        const response = await axios.post(
+          "http://127.0.0.1:8000/token",
+          formData,
+          {
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          }
+        );
 
-      if (!response.ok) {
-        throw new Error("Invalid access code. Please try again.");
+        return response.data.access_token;
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          throw new Error("Invalid access code. Please try again.");
+        }
+        throw new Error("An unexpected error occurred.");
       }
-
-      const data = await response.json();
-      return data.access_token;
     },
     onSuccess: (data) => {
       token.set(data);

@@ -1,11 +1,13 @@
+import os
+
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException, Depends, status, Request, Body
 from sqlalchemy.orm import Session
 from typing import List
-from diffing.database import get_db
-from diffing.crud import create_song_with_tab, get_song_with_tab, get_all_songs
-from diffing.models import Song, SongMetadata, Band
-from diffing.utils import save_uploaded_file
-from diffing.auth.authentication import get_current_band
+from app.database import get_db
+from app.crud import create_song_with_tab, get_song_with_tab, get_all_songs
+from app.models import Song, SongMetadata, Band
+from app.utils import save_uploaded_file
+from app.auth.authentication import get_current_band
 from pathlib import Path 
 from urllib.parse import urlparse
 
