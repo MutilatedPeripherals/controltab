@@ -22,16 +22,28 @@ async def get_songs(db: Session = Depends(get_db), current_band: Band = Depends(
 
 
 @router.get("/{song_id}")
-async def get_song(song_id: int, request: Request, db: Session = Depends(get_db), current_band: Band = Depends(get_current_band)):
+async def get_song(
+    song_id: int, 
+    request: Request, 
+    db: Session = Depends(get_db), 
+    current_band: Band = Depends(get_current_band)
+):
     song = get_song_with_tab(db, song_id)
     if not song:
         raise HTTPException(status_code=404, detail="Song not found")
 
     if song.tab:
         relative_filepath = song.tab.filepath.lstrip("/")
-        song.tab.filepath = f"{request.base_url}static/{relative_filepath}"
+        file_url = f"{request.base_url}static/{relative_filepath}"
+        
+        # Ensure the file URL uses HTTPS in production
+        if file_url.startswith("http://") and "railway.app" in file_url:
+            file_url = file_url.replace("http://", "https://")
+        
+        song.tab.filepath = file_url
     else:
         raise HTTPException(status_code=404, detail="Tab not found for this song")
+    
     return song
 
 
