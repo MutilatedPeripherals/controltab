@@ -8,7 +8,9 @@ from app.auth import authentication
 from app.config import FILE_STORAGE_PATH  # Import FILE_STORAGE_PATH
 from app.database import initialize_database
 from app.routers import bands, songs, comparison, setlists
+from fastapi.openapi.docs import get_swagger_ui_html
 
+from fastapi.openapi.utils import get_openapi
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,6 +27,37 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def custom_openapi(app: FastAPI):
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    
+    # Configure security scheme for Swagger UI
+    openapi_schema['components']['securitySchemes'] = {
+        "bearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT"
+        }
+    }
+    
+    # Apply security globally to all endpoints
+    for path in openapi_schema.get('paths', {}).values():
+        for method in path.values():
+            method.setdefault('security', []).append({"bearerAuth": []})
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+# In your main.py, after creating the FastAPI app
+app.openapi = lambda: custom_openapi(app)
 
 # Directory for storing uploaded files
 FILE_STORAGE_PATH.mkdir(parents=True, exist_ok=True)  # Ensure the directory exists
