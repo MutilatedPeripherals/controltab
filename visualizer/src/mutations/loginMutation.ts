@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createMutation } from "@tanstack/svelte-query";
 import { writable } from "svelte/store";
+import axiosInstance from "../axiosInstance";
 
 // Store to hold the JWT token globally
 const storedToken = localStorage.getItem("token");
@@ -21,8 +22,8 @@ export function useLogin() {
         const formData = new URLSearchParams();
         formData.append("access_code", accessCode);
 
-        const response = await axios.post(
-          "http://127.0.0.1:8000/token",
+        const response = await axiosInstance.post(
+          "/token",
           formData,
           {
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
