@@ -76,8 +76,9 @@ async def root():
     return RedirectResponse(url="/docs")
 
 @app.middleware("http")
-async def enforce_https(request: Request, call_next):
-    # Use `X-Forwarded-Proto` to determine the original scheme
-    if request.headers.get("x-forwarded-proto") == "https":
-        request.url = request.url.replace(scheme="https")
+async def enforce_https_static(request: Request, call_next):
+    # Check if the request is for static files
+    if request.url.path.startswith("/static") and request.url.scheme == "http":
+        https_url = request.url.replace(scheme="https")
+        return RedirectResponse(url=str(https_url))
     return await call_next(request)
