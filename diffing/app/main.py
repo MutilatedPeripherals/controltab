@@ -9,6 +9,7 @@ from app.config import FILE_STORAGE_PATH  # Import FILE_STORAGE_PATH
 from app.database import initialize_database
 from app.routers import bands, songs, comparison, setlists
 from fastapi.openapi.docs import get_swagger_ui_html
+
 from fastapi.openapi.utils import get_openapi
 
 @asynccontextmanager
@@ -18,7 +19,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# CORS Middleware to allow requests from the front-end
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -58,32 +58,18 @@ def custom_openapi(app: FastAPI):
     app.openapi_schema = openapi_schema
     return app.openapi_schema
 
-# Use the custom OpenAPI schema
 app.openapi = lambda: custom_openapi(app)
 
-# Ensure the directory for static files exists
-FILE_STORAGE_PATH.mkdir(parents=True, exist_ok=True)
-
-# Mount static files
+FILE_STORAGE_PATH.mkdir(parents=True, exist_ok=True)  
 app.mount("/static", StaticFiles(directory=FILE_STORAGE_PATH), name="static")
 
-# Include routers
 app.include_router(songs.router)
 app.include_router(comparison.router)
 app.include_router(bands.router)
 app.include_router(authentication.router)
 app.include_router(setlists.router)
 
+
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse(url="/docs")
-
-# Enforce HTTPS for the Static Files
-@app.middleware("http")
-async def enforce_https_static(request, call_next):
-    # Only redirect if the scheme is HTTP and the path starts with `/static`
-    if request.url.scheme == "http" and request.url.path.startswith("/static"):
-        # Redirect to the same URL with HTTPS
-        https_url = request.url.replace(scheme="https")
-        return RedirectResponse(url=str(https_url))
-    return await call_next(request)

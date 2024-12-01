@@ -28,9 +28,10 @@ async def get_song(song_id: int, request: Request, db: Session = Depends(get_db)
         raise HTTPException(status_code=404, detail="Song not found")
 
     if song.tab:
-        # Construct the full URL to access the file
-        song.tab.filepath = f"{request.base_url}static/{song.tab.filepath}"
-
+        relative_filepath = song.tab.filepath.lstrip("/")
+        song.tab.filepath = f"{request.base_url}static/{relative_filepath}"
+    else:
+        raise HTTPException(status_code=404, detail="Tab not found for this song")
     return song
 
 
