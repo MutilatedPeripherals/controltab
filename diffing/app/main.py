@@ -74,11 +74,3 @@ app.include_router(setlists.router)
 @app.get("/", include_in_schema=False)
 async def root():
     return RedirectResponse(url="/docs")
-
-@app.middleware("http")
-async def enforce_https_static(request: Request, call_next):
-    # Check if the request is for static files
-    if request.url.path.startswith("/static") and request.url.scheme == "http":
-        https_url = request.url.replace(scheme="https")
-        return RedirectResponse(url=str(https_url))
-    return await call_next(request)
