@@ -22,7 +22,7 @@ app = FastAPI(lifespan=lifespan)
 # CORS Middleware Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://controltab.up.railway.app"],  # Use your actual frontend origin
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
