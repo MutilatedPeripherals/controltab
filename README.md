@@ -2,7 +2,8 @@
 
 ## Relevant Links:
 - [Backend Swagger Docs](https://backend-production-0646.up.railway.app/docs)
-- [Landing Page Prototype](https://yj8u03csybl1ve8pzinpqlhohn3qabuu.vercel.app)
+- [Landing Page Prototype]([https://yj8u03csybl1ve8pzinpqlhohn3qabuu.vercel.app](https://controltab.vercel.app/)
+- [Frontend](https://controltab.up.railway.app/#/login))
 
 ## Backend setup
 
