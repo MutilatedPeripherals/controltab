@@ -1,5 +1,9 @@
 # controltab
 
+## Relevant Links:
+- [Backend Swagger Docs](https://backend-production-0646.up.railway.app/docs)
+- [Landing Page Prototype](https://yj8u03csybl1ve8pzinpqlhohn3qabuu.vercel.app)
+
 ## Backend setup
 
 ```bash
@@ -29,7 +33,7 @@ npm install
 npm run dev
 ```
 
-TODOs:
+## TODOs:
 * when we accept a change, then also save the history of the previous version.
 * when we have the history available in the db, then provide a rollback functionality.
 * what do we do with dangling files. we should have a scheduler which checks that any file not being a part of a history gets deleted or sth.
