@@ -9,14 +9,19 @@ import CompareTabs from "./routes/comparer/CompareTabs.svelte";
 import Visualizer from "./routes/Visualizer.svelte";
 import VisualizerLegacy from "./routes/VisualizerLegacy.svelte";
 import SetlistMode from "./routes/setlist-editor/SetlistMode.svelte";
+import { push } from "svelte-spa-router";
 
 import { isAuthenticated } from "./stores/auth";
 
 function authGuard(): Promise<boolean> {
   return new Promise((resolve) => {
-    isAuthenticated.subscribe((value) => {
+    const unsubscribe = isAuthenticated.subscribe((value) => {
+      if (!value) {
+        push("/login");
+      }
       resolve(value);
-    })();
+      unsubscribe(); 
+    });
   });
 }
 

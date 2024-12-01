@@ -5,8 +5,19 @@
   import LeftSidebar from "./components/layout/LeftSidebar.svelte";
   import Topbar from "./components/layout/Topbar.svelte";
   import { Toaster } from "$lib/components/ui/sonner";
-
+  import { onMount } from "svelte";
+  import { isAuthenticated } from "./stores/auth"; 
   const queryClient = new QueryClient();
+
+  onMount(() => {
+    if ($location === "/" || $location === "") {
+      if ($isAuthenticated) {
+        push("/songs"); 
+      } else {
+        push("/login"); 
+      }
+    }
+  });
 </script>
 
 <div class="flex flex-col min-h-screen bg-base-200">
@@ -34,4 +45,4 @@
 
 <style global>
   @import "tailwindcss/tailwind.css";
-</style>
+</style> 
