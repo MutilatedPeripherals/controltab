@@ -37,6 +37,8 @@ async def get_song(
         file_url = f"{request.base_url}static/{relative_filepath}"
         
         # Ensure the file URL uses HTTPS in production
+        # its pretty ugly because we are forcing the tab url to be https, since alphaTab requires it to render
+        # all this will be much cleaner when we will switch to s3
         if file_url.startswith("http://") and "railway.app" in file_url:
             file_url = file_url.replace("http://", "https://")
         
