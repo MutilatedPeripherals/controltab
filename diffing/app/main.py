@@ -19,10 +19,12 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# CORS Middleware Configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://controltab.up.railway.app"],  # Use your actual frontend origin
+    allow_origins=[
+        "https://controltab.up.railway.app",  # Deployed Svelte app
+        "http://localhost:5173",             # Local Svelte app during development
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

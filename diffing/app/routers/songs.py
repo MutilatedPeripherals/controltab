@@ -18,7 +18,7 @@ router = APIRouter(prefix="/songs", tags=["songs"])
 
 @router.get("/", response_model=List[Song])
 async def get_songs(db: Session = Depends(get_db), current_band: Band = Depends(get_current_band)):
-    return get_all_songs(db)
+    return get_all_songs(db, current_band.id)
 
 
 @router.get("/{song_id}")

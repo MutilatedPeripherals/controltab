@@ -18,8 +18,8 @@ def create_song_with_tab(db: Session, title: str, filepath: str, band_id: int) -
 def get_song_with_tab(db: Session, song_id: int) -> Optional[SongMetadata]:
     return db.query(SongMetadata).options(joinedload(SongMetadata.tab)).filter(SongMetadata.id == song_id).first()
 
-def get_all_songs(db: Session) -> list[Song]:
-    return db.query(SongMetadata).all()
+def get_all_songs(db: Session, band_id: int):
+    return db.query(SongMetadata).filter(SongMetadata.band_id == band_id).all()
 
 def get_tab_file_path(db: Session, song_id: int) -> Optional[str]:
     tab = db.query(TabMetadata).filter(TabMetadata.song_id == song_id).first()
