@@ -24,6 +24,7 @@ app.add_middleware(
     allow_origins=[
         "https://controltab.up.railway.app",  # Deployed Svelte app
         "http://localhost:5173",             # Local Svelte app during development
+        "https://dashboard.controltab.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
