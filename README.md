@@ -1,9 +1,9 @@
 # controltab
 
 ## Relevant Links:
+- [Landing Page](https://www.controltab.app/)
+- [Frontend](https://dashboard.controltab.app/#/login)
 - [Backend Swagger Docs](https://backend-production-0646.up.railway.app/docs)
-- [Landing Page Prototype](https://controltab.vercel.app/)
-- [Frontend](https://controltab.up.railway.app/#/login)
 
 ## Backend setup
 
