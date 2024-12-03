@@ -8,7 +8,9 @@ interface UpdateSetlistVariables {
 }
 
 function mapSetlistForServer(setlist: SetlistItem[]) {
-  console.log("enter", setlist);
+  if (import.meta.env.VITE_DEBUG) {
+    console.log("enter", setlist);
+  }
   return setlist.map((item) => {
     if (item.type === "song") {
       const { songId, ...rest } = item;
@@ -28,7 +30,9 @@ export function useUpdateSetlist() {
   return createMutation<UpdateSetlistResponse, Error, UpdateSetlistVariables>({
     mutationFn: async ({ setlist }) => {
       const mappedSetlist = mapSetlistForServer(setlist);
-      console.log(mappedSetlist);
+      if (import.meta.env.VITE_DEBUG) {
+        console.log(mappedSetlist);
+      }
       const response = await axiosInstance.put(
         "/setlist_items/setlist",
         mappedSetlist,

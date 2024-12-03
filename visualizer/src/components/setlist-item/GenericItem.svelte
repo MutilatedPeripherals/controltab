@@ -20,7 +20,9 @@
   export let onRemove: (identifier: string | undefined) => void;
 
   const identifier = setlistItem.id;
-  console.log(identifier);
+  if (import.meta.env.VITE_DEBUG) {
+    console.log(identifier);
+  }
   function getIconForType(type: SetlistItem["type"]) {
     switch (type) {
       case "sample":
