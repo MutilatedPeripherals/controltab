@@ -16,6 +16,7 @@
     AlertTitle,
   } from "$lib/components/ui/alert";
   import { AlertCircle, Music2 } from "lucide-svelte";
+  import { toast } from "svelte-sonner";
 
   import { useLogin } from "../../mutations/loginMutation";
   import { login } from "../../stores/auth";
@@ -36,6 +37,13 @@
         login(token);
         push("/songs");
       },
+    });
+  }
+
+  function handleRegister() {
+    toast.info("Band registration is temporarily disabled", {
+      description: "We are currently not accepting new band registrations. Please check back later.",
+      duration: 4000
     });
   }
 </script>
@@ -71,8 +79,16 @@
           </Alert>
         {/if}
       </CardContent>
-      <CardFooter>
-        <Button type="submit" class="w-full">Access Dashboard</Button>
+      <CardFooter class="flex flex-col space-y-2">
+        <Button type="submit" class="w-full mb-2">Access Dashboard</Button>
+        <Button 
+          type="button" 
+          variant="outline" 
+          class="w-full" 
+          on:click={handleRegister}
+        >
+          Register New Band
+        </Button>
       </CardFooter>
     </form>
   </Card>

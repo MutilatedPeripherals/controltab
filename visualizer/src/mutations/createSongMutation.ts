@@ -17,7 +17,7 @@ export function useCreateSong() {
       formData.append("title", title);
       formData.append("tab_file", tabFile);
 
-      const response = await axiosInstance.post("/songs", formData, {
+      const response = await axiosInstance.post("/songs/", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

@@ -52,7 +52,7 @@
 
   const updateItem = (
     id: string | undefined,
-    updates: Partial<SetlistItem>
+    updates: Partial<SetlistItem>,
   ) => {
     if (!id) return;
 
@@ -96,7 +96,7 @@
 
   const handleSave = () => {
     const invalidItems = setlist.filter(
-      (item) => item.type === "song" && item.songId === null
+      (item) => item.type === "song" && item.songId === null,
     );
 
     if (invalidItems.length > 0) {
@@ -119,7 +119,7 @@
             description: "Please try again later.",
           });
         },
-      }
+      },
     );
   };
 

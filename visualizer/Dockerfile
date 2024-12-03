@@ -11,7 +11,9 @@ RUN npm install
 # Copy the app code
 COPY . .
 
-# Build the app
+# Build the app with environment variables
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 RUN npm run build
 
 # Serve the app using a lightweight web server

@@ -41,7 +41,7 @@
           <DropdownMenu.Item on:click={() => handleAction("suggest", song)}>
             <MessageSquare class="mr-2 h-4 w-4" /> Suggest Changes
           </DropdownMenu.Item>
-          <DropdownMenu.Item on:click={() => handleAction("export", song)}>
+          <DropdownMenu.Item on:click={() => handleAction("export", song)} disabled>
             Export as PDF
           </DropdownMenu.Item>
           <DropdownMenu.Separator />

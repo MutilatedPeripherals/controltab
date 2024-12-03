@@ -6,7 +6,7 @@ export function useFetchSongs() {
   return createQuery<Song[], Error>({
     queryKey: ["songs"],
     queryFn: async () => {
-      const response = await axiosInstance.get("/songs");
+      const response = await axiosInstance.get("/songs/");
       return response.data;
     },
     enabled: true,
